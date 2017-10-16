@@ -1,0 +1,161 @@
+#!/bin/sh
+#-h for help
+VERBOSE=0
+while getopts x:y:w:h:s:v:p:t: option
+do
+	case "${option}"
+ 	in
+ 	x) 	XOFF=$OPTARG
+		parameters+=" -x "
+		parameters+=$XOFF;;
+ 	y) 	YOFF=$OPTARG
+		parameters+=" -y "
+		parameters+=$YOFF;;
+ 	w) 	WIDTH=$OPTARG
+		parameters+=" -w "
+		parameters+=$WIDTH;;
+ 	h) 	HEIGHT=$OPTARG
+		parameters+=" -h "
+		parameters+=$HEIGHT;;
+	s) 	SCALE=$OPTARG
+		parameters+=" -s "
+		parameters+=$SCALE;;
+  v) VERBOSE=1;;
+  t) THRESHOLD=$OPTARG;;
+  p) PPI=$OPTARG
+    ;;
+ 	esac
+done
+
+if [ -z "$PPI" ]; then 
+  PPI=1200
+fi 
+if [ -z "$THRESHOLD" ]; then 
+  THRESHOLD=0.08
+elif [ "$THRESHOLD" -le 0 ];then
+  echo "Threshold has to be bigger than 0"
+  THRESHOLD=0.08
+  exit 1
+fi 
+
+
+FILES=$PWD/
+# DIR=${0%/*}
+binary="/Applications/QCAD-Pro.app/Contents/resources/qcad"
+shopt -s nullglob
+taskCount=(*.dwg)
+taskCount=${#taskCount[@]}
+taskDone=0
+progressBarWidth=20
+
+progressBar () {
+  
+  # Calculate number of fill/empty slots in the bar
+  progress=$(echo "$progressBarWidth/$taskCount*$tasksDone" | bc -l)  
+  fill=$(printf "%.0f\n" $progress)
+  if [ $fill -gt $progressBarWidth ]; then
+    fill=$progressBarWidth
+  fi
+  empty=$(($fill-$progressBarWidth))
+
+  # Percentage Calculation
+  percent=$(echo "100/$taskCount*$tasksDone" | bc -l)
+  percent=$(printf "%0.2f\n" $percent)
+  if [ $(echo "$percent>100" | bc) -gt 0 ]; then
+    percent="100.00"
+  fi
+
+  # Output to screen
+  printf "\r["
+  printf "%${fill}s" '' | tr ' ' ▉
+  printf "%${empty}s" '' | tr ' ' ░
+  printf "] $percent%% - $text "
+}
+
+
+
+
+[ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
+[ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
+file="Helperfiles/Helperfile.txt"
+touch $file
+echo "--Command to run--\n" > $file
+echo "./start -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD" >> $file
+echo "\n --Variables-- \n" >> $file
+echo "-xoffset: $XOFF"  >> $file
+echo "-yoffset: $YOFF"  >> $file
+echo "-width:   $WIDTH"  >> $file
+echo "-height:  $HEIGHT"  >> $file
+echo "-scale:   $SCALE" >> $file
+echo "-PPI:     $PPI" >> $file
+echo "-Threshold $THRESHOLD" >> $file
+layer="./layers.txt"
+echo "\n--Active layer list--\n" >> $file
+awk '!a[$0]++' "layers.txt" >>$file
+
+
+# clear
+echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE . \nMore details can be found in the Helperfile inside the Helperfiles directory."
+echo "\n...please be patient..."
+
+
+for f in $FILES*.dwg
+do
+  pdffile=${f##*/}
+  cleanfile=${pdffile%.*}	
+  text=$(echo "$cleanfile done")
+  # progressBar $taskCount $taskDone $text
+	"$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r" 2>$1 | grep "MESSAGE:" 
+
+	convert -density $PPI                 \
+  "Helperfiles/$cleanfile.pdf"          \
+    -alpha off                          \
+    -negate                             \
+    \(                                  \
+       -clone 0                         \
+       -fill "#000000"                  \
+       -colorize 100                    \
+    \)                                  \
+    \(                                  \
+       -clone 0,1                       \
+       -compose difference              \
+       -composite                       \
+       -separate                        \
+       +channel                         \
+       -evaluate-sequence max           \
+       -auto-level                      \
+    \)                                  \
+     -delete 1                          \
+     -alpha off                         \
+     -compose over                      \
+     -compose copy_opacity              \
+     -composite                         \
+  -resize 2048                          \
+  -sharpen 0x1.0                        \
+  -colorspace Gray                      \
+  -quality 90                           \
+  "PNG/$cleanfile.png"
+
+  convert "PNG/$cleanfile.png"          \
+  -channel A -fx "p*(p>$THRESHOLD?22:0)"\
+  "PNG/$cleanfile.png"
+
+
+  (( tasksDone += 1 ))
+  # Add some friendly output
+  progressBar $taskCount $taskDone $text
+done
+
+echo "\n...should be all done..."
+
+# for f in $FILES*.DWG
+# do
+# 	"$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r"
+# 	pdffile=${f##*/}
+# 	cleanfile=${pdffile%.*}
+# 	convert -resize 2048 -density 300 "Helperfiles/$cleanfile.pdf" "PNG/$cleanfile.png"
+# done
+
+log="./$1"
+[ -e "$log" ] && rm $log
+
