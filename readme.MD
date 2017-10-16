@@ -18,7 +18,7 @@ There are 2 extra parameters: "-p" and "-t".
 -p has to be followed by an integer and allows you to set the DPI or PPI for the eventual PNG. The -p parameter is not mandatory and is set by default to 1200.
 -t is followed by a number that gives the percentage of opacity a pixel needs to have be either be completely visible or completely invisible. The default value for -t is very low already, namelijk 0.8. When should you fiddle with the threshold? Only if you think you are seeing either too many or too few lines. If you see to many lines or pixels, you will have to up the -t value. If you see full lines missing, you will have to lower the -t value even more. The -t value always has to be > 0. If a parameter is missing the script should automatically fill in a default value and give you a notice about this! 
 
-	Parameter explanation:
+Parameter explanation:
 -w should be followed by the width of the pdf (Example "-w 310")
 -h should be followed by the height of the pdf(Example "-h 110")
 -x should be followed by the value of the offset for the x-axis (Example "-x 4000")
