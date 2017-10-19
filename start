@@ -40,7 +40,6 @@ fi
 
 
 FILES=$PWD/
-echo "PWD = $FILES"
 # DIR=${0%/*}
 binary="/Applications/QCAD-Pro.app/Contents/resources/qcad"
 shopt -s nullglob
