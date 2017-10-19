@@ -3,32 +3,32 @@
 VERBOSE=0
 while getopts x:y:w:h:s:v:p:t: option
 do
-	case "${option}"
- 	in
- 	x) 	XOFF=$OPTARG
-		parameters+=" -x "
-		parameters+=$XOFF;;
- 	y) 	YOFF=$OPTARG
-		parameters+=" -y "
-		parameters+=$YOFF;;
- 	w) 	WIDTH=$OPTARG
-		parameters+=" -w "
-		parameters+=$WIDTH;;
- 	h) 	HEIGHT=$OPTARG
-		parameters+=" -h "
-		parameters+=$HEIGHT;;
-	s) 	SCALE=$OPTARG
-		parameters+=" -s "
-		parameters+=$SCALE;;
+  case "${option}"
+  in
+  x)  XOFF=$OPTARG
+    parameters+=" -x "
+    parameters+=$XOFF;;
+  y)  YOFF=$OPTARG
+    parameters+=" -y "
+    parameters+=$YOFF;;
+  w)  WIDTH=$OPTARG
+    parameters+=" -w "
+    parameters+=$WIDTH;;
+  h)  HEIGHT=$OPTARG
+    parameters+=" -h "
+    parameters+=$HEIGHT;;
+  s)  SCALE=$OPTARG
+    parameters+=" -s "
+    parameters+=$SCALE;;
   v) VERBOSE=1;;
   t) THRESHOLD=$OPTARG;;
   p) PPI=$OPTARG
     ;;
- 	esac
+  esac
 done
 
 if [ -z "$PPI" ]; then 
-  PPI=1200
+  PPI=2400
 fi 
 if [ -z "$THRESHOLD" ]; then 
   THRESHOLD=0.08
@@ -40,6 +40,7 @@ fi
 
 
 FILES=$PWD/
+echo "PWD = $FILES"
 # DIR=${0%/*}
 binary="/Applications/QCAD-Pro.app/Contents/resources/qcad"
 shopt -s nullglob
@@ -72,11 +73,10 @@ progressBar () {
   printf "] $percent%% - $text "
 }
 
-
-
-
 [ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
 [ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
+[ -d "$PRIMEPNG" ] && echo "PRIMEPNG folder already exists" || mkdir PRIMEPNG
+
 file="Helperfiles/Helperfile.txt"
 touch $file
 echo "--Command to run--\n" > $file
@@ -99,15 +99,26 @@ echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE 
 echo "\n...please be patient..."
 
 
-for f in $FILES*.dwg
+for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
   pdffile=${f##*/}
-  cleanfile=${pdffile%.*}	
+  cleanfile=${pdffile%.*} 
   text=$(echo "$cleanfile done")
   # progressBar $taskCount $taskDone $text
-	"$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r" 2>$1 | grep "MESSAGE:" 
+  "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r" 2>$1 | grep "MESSAGE:" 
 
-	convert -density $PPI                 \
+   convert -density $PPI                \
+      "Helperfiles/$cleanfile.pdf"      \
+      -resize 2048                      \
+      -sharpen 0x1.0                    \
+      -colorspace Gray                  \
+      -quality 90                       \
+      "PRIMEPNG/$cleanfile.png"
+
+
+
+
+  convert -density $PPI                 \
   "Helperfiles/$cleanfile.pdf"          \
     -alpha off                          \
     -negate                             \
@@ -141,6 +152,7 @@ do
   "PNG/$cleanfile.png"
 
 
+
   (( tasksDone += 1 ))
   # Add some friendly output
   progressBar $taskCount $taskDone $text
@@ -150,10 +162,10 @@ echo "\n...should be all done..."
 
 # for f in $FILES*.DWG
 # do
-# 	"$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r"
-# 	pdffile=${f##*/}
-# 	cleanfile=${pdffile%.*}
-# 	convert -resize 2048 -density 300 "Helperfiles/$cleanfile.pdf" "PNG/$cleanfile.png"
+#   "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r"
+#   pdffile=${f##*/}
+#   cleanfile=${pdffile%.*}
+#   convert -resize 2048 -density 300 "Helperfiles/$cleanfile.pdf" "PNG/$cleanfile.png"
 # done
 
 log="./$1"
