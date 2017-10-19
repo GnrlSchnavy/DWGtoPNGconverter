@@ -27,15 +27,12 @@ do
   esac
 done
 
+
 if [ -z "$PPI" ]; then 
   PPI=2400
 fi 
 if [ -z "$THRESHOLD" ]; then 
   THRESHOLD=0.08
-elif [ "$THRESHOLD" -le 0 ];then
-  echo "Threshold has to be bigger than 0"
-  THRESHOLD=0.08
-  exit 1
 fi 
 
 
@@ -112,6 +109,8 @@ do
       -sharpen 0x1.0                    \
       -colorspace Gray                  \
       -quality 90                       \
+      -background white                 \
+      -alpha remove                     \
       "PRIMEPNG/$cleanfile.png"
 
 
