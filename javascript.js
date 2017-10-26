@@ -25,6 +25,9 @@ function main(){
 	exporter.print(path2);
 	print("\n\nMESSAGE1:file exported to " + path2 + "\n\n");
 	di.exportFile(path+"Helperfiles/"+filename+".dxf","DFX 2000");
+
+	//explode everthing
+	//check for layers with #### export those to seperate map
 }
 
 function prepareDirectory(path){
@@ -114,6 +117,12 @@ function turnOnLayers(doc,di,textFile){
 		for (var l = 0; l < layers.length; l++) {
 			var layer = doc.queryLayer(layers[l]);
 			for(var i = 0; i<textFile.length;i++){
+				if(textFile[i].indexOf('####') !== -1){
+					if (layer.getName()===textFile[i].substring(4,textFile[i].length)) {
+				        layer.setFrozen(false);
+				        break;
+			    	}
+				}
 			    if (layer.getName()===textFile[i]) {
 			        layer.setFrozen(false);
 			        print("turned on layer " + textFile[i]);

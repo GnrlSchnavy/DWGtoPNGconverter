@@ -86,6 +86,8 @@ echo "-scale:   $SCALE" >> $file
 echo "-PPI:     $PPI" >> $file
 echo "-Threshold $THRESHOLD" >> $file
 layer="./layers.txt"
+echo "\n--Active layers list for wall--\n" >> $file
+echo "to be filled with layers that will only show the wall" >> $file
 echo "\n--Active layer list--\n" >> $file
 awk '!a[$0]++' "layers.txt" >>$file
 
@@ -102,18 +104,6 @@ do
   text=$(echo "$cleanfile done")
   # progressBar $taskCount $taskDone $text
   "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r" 2>$1 | grep "MESSAGE:" 
-
-   convert -density $PPI                \
-      "Helperfiles/$cleanfile.pdf"      \
-      -resize 2048                      \
-      -sharpen 0x1.0                    \
-      -colorspace Gray                  \
-      -quality 90                       \
-      -background white                 \
-      -alpha remove                     \
-      "PRIMEPNG/$cleanfile.png"
-
-
 
 
   convert -density $PPI                 \
@@ -149,7 +139,18 @@ do
   -channel A -fx "p*(p>$THRESHOLD?22:0)"\
   "PNG/$cleanfile.png"
 
-
+   convert -density $PPI                \
+      "Helperfiles/$cleanfile.pdf"      \
+      -resize 2048                      \
+      -sharpen 0x1.0                    \
+      -colorspace Gray                  \
+      -quality 90                       \
+      -background white                 \
+      -alpha remove                     \
+      -negate       \
+      -threshold 0 \
+       -negate      \
+      "PRIMEPNG/$cleanfile.png"
 
   (( tasksDone += 1 ))
   # Add some friendly output
