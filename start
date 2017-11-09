@@ -42,7 +42,7 @@ FILES=$PWD/
 binary="/Applications/QCAD-Pro.app/Contents/resources/qcad"
 shopt -s nullglob
 #Progressbar setup
-taskCount=(*.dwg)
+taskCount=(*.DWG)
 taskCount=${#taskCount[@]}
 taskDone=0
 progressBarWidth=20
@@ -108,7 +108,7 @@ echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE 
 echo "\n...please be patient..."
 
 #Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
-for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
+for f in $FILES*.DWG  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
   pdffile=${f##*/}
   cleanfile=${pdffile%.*} 
@@ -190,8 +190,17 @@ do
       -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
       convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
 
-      convert "Coordinatefiles/5.png" -transparent black "Coordinatefiles/final.png"
-      #works up to here
+      for i in `seq 1 3`;
+		do
+			convert 5.png -auto-level 1.png
+			convert 1.png -canny 0x1+10%+30% 2.png
+			convert 2.png -fill red -draw "color 0,0 floodfill" -alpha off \
+			-fill black +opaque red -fill white -opaque red 4.png
+			convert 4.png -morphology edgein octagon:1 5.png
+		done 
+
+	  convert "Coordinatefiles/5.png" -transparent black "Coordinatefiles/final.png"
+	
       convert "Coordinatefiles/final.png" txt: > "Coordinatefiles/test1.txt"
 
       grep -v '(0,0,0,0)' "Coordinatefiles/test1.txt" > "Coordinatefiles/test2.txt"
@@ -216,7 +225,7 @@ done
 
 rm "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
-for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
+for f in $FILES*.DWG  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
   mv "$f" "DWGfiles"
 done
