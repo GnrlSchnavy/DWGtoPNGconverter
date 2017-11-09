@@ -167,7 +167,24 @@ do
       "PRIMEPNG/$cleanfile.png"
 
 
-      convert "PRIMEPNG/$cleanfile.png" -auto-level "Coordinatefiles/1.png"
+#Conversion for Prime ready floorplans
+   convert -density $PPI                \
+      "Coordinatefiles/$cleanfile.pdf"      \
+      -resize 2048                      \
+      -sharpen 0x1.0                    \
+      -colorspace Gray                  \
+      -quality 90                       \
+      -background white                 \
+      -alpha remove                     \
+      -negate       \
+      -threshold 0 \
+       -negate      \
+      "Coordinatefiles/$cleanfile.png"
+
+
+
+
+      convert "Coordinatefiles/$cleanfile.png" -auto-level "Coordinatefiles/1.png"
       convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
       convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
       -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
@@ -190,7 +207,7 @@ do
 
       python3 lines.py "$cleanfile.csv" "$WIDTH" "$HEIGHT"
 
-      rm "Coordinatefiles/$cleanfile.csv" "Coordinatefiles/$cleanfile.png"   
+      # rm "Coordinatefiles/$cleanfile.csv" "Coordinatefiles/$cleanfile.png"   
 
   (( tasksDone += 1 ))
   progressBar $taskCount $taskDone $text
