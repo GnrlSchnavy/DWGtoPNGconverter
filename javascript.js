@@ -1,4 +1,4 @@
-function main(){ 
+ function main(){ 
 
 	//Start imports
 	include("scripts/File/Print/Print.js");
@@ -10,24 +10,22 @@ function main(){
 	doc.setUnit(RS.Millimeter);
 
 	//Do import, fix layers and remove text
-	var textFile = readTextFile(path+'layers.txt'); 
-	importFiles(doc, di);
-	removeText(doc,di);
-	turnOnLayers(doc,di,textFile);
-	var scene = new RGraphicsSceneQt(di);
+	var textFile = readTextFile(path+'layers.txt');   //Read layers from text file
+	importFiles(doc, di);							  //Import the dwg file passed through the bash script
+	removeText(doc,di);								  //Remove all the text and text-based elements from the drawing
+	turnOnLayers(doc,di,textFile);					  //Turn on the selected layers
+	var scene = new RGraphicsSceneQt(di);			  
 	var view = new RGraphicsViewImage();
-	setPageVariables(doc,di,view,scene);
+	setPageVariables(doc,di,view,scene);			  //set offsets, page width and height, grayscale, hairlines etc.
 
 	//Start export and creation of maps
-	var exporter = new Print(undefined, doc, view);
+	var exporter = new Print(undefined, doc, view);	  
 	filename = inputfile.substring(inputfile.lastIndexOf("/")+1,inputfile.length-4);
 	path2 = path+"Helperfiles/"+filename+".pdf";
-	exporter.print(path2);
+	exporter.print(path2);							  //Export to PDF
 	print("\n\nMESSAGE1:file exported to " + path2 + "\n\n");
-	di.exportFile(path+"Helperfiles/"+filename+".dxf","DFX 2000");
+	di.exportFile(path+"Helperfiles/"+filename+".dxf","DFX 2000");	//Export to dxf
 
-	//explode everthing
-	//check for layers with #### export those to seperate map
 }
 
 function prepareDirectory(path){

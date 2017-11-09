@@ -1,6 +1,7 @@
 #!/bin/sh
 #-h for help
-VERBOSE=0
+
+#Getting parameters
 while getopts x:y:w:h:s:v:p:t: option
 do
   case "${option}"
@@ -28,6 +29,7 @@ do
 done
 
 
+#Check if PPI and THRESHOLD variables were set, if not, use default values
 if [ -z "$PPI" ]; then 
   PPI=2400
 fi 
@@ -35,15 +37,20 @@ if [ -z "$THRESHOLD" ]; then
   THRESHOLD=0.08
 fi 
 
-
+#Preparations to launch QCAD from command line
 FILES=$PWD/
-# DIR=${0%/*}
 binary="/Applications/QCAD-Pro.app/Contents/resources/qcad"
 shopt -s nullglob
+#Progressbar setup
 taskCount=(*.dwg)
 taskCount=${#taskCount[@]}
 taskDone=0
 progressBarWidth=20
+
+pause () {
+  read -p "$*"
+}
+
 
 progressBar () {
   
@@ -69,10 +76,14 @@ progressBar () {
   printf "] $percent%% - $text "
 }
 
+#Check and create extra directorys if needed
+[ -d "$DWGfiles" ] && echo "$DWGfiles directory already exists" || mkdir DWGfiles
+[ -d "$Coordinatefiles" ] && echo "$Coordinatefiles folder already exusts" || mkdir Coordinatefiles
 [ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
 [ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
 [ -d "$PRIMEPNG" ] && echo "PRIMEPNG folder already exists" || mkdir PRIMEPNG
 
+#Creating helperfile and adding all backlog info to it.
 file="Helperfiles/Helperfile.txt"
 touch $file
 echo "--Command to run--\n" > $file
@@ -92,20 +103,21 @@ echo "\n--Active layer list--\n" >> $file
 awk '!a[$0]++' "layers.txt" >>$file
 
 
-# clear
+#Just some debugging info for the user
 echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE . \nMore details can be found in the Helperfile inside the Helperfiles directory."
 echo "\n...please be patient..."
 
-
+#Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
 for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
   pdffile=${f##*/}
   cleanfile=${pdffile%.*} 
   text=$(echo "$cleanfile done")
-  # progressBar $taskCount $taskDone $text
+
+#Start QCAD with given paramteres, returns a pdf file of the first .dwg file
   "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r" 2>$1 | grep "MESSAGE:" 
 
-
+#Convert pdf to PNG
   convert -density $PPI                 \
   "Helperfiles/$cleanfile.pdf"          \
     -alpha off                          \
@@ -135,10 +147,12 @@ do
   -quality 90                           \
   "PNG/$cleanfile.png"
 
+#Just a small extra conversion to make sure a pixel is either white or completely transparant
   convert "PNG/$cleanfile.png"          \
   -channel A -fx "p*(p>$THRESHOLD?22:0)"\
   "PNG/$cleanfile.png"
 
+#Conversion for Prime ready floorplans
    convert -density $PPI                \
       "Helperfiles/$cleanfile.pdf"      \
       -resize 2048                      \
@@ -152,21 +166,49 @@ do
        -negate      \
       "PRIMEPNG/$cleanfile.png"
 
+
+      convert "PRIMEPNG/$cleanfile.png" -auto-level "Coordinatefiles/1.png"
+      convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
+      convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
+      -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
+      convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
+
+      convert "Coordinatefiles/5.png" -transparent black "Coordinatefiles/final.png"
+      #works up to here
+      convert "Coordinatefiles/final.png" txt: > "Coordinatefiles/test1.txt"
+
+      grep -v '(0,0,0,0)' "Coordinatefiles/test1.txt" > "Coordinatefiles/test2.txt"
+      
+
+      grep -v 'graya(255,0)' "Coordinatefiles/test2.txt" > "Coordinatefiles/test3.txt"
+      
+
+      awk '{print $1}' "Coordinatefiles/test3.txt" > "Coordinatefiles/test4.txt"
+     
+
+      cat "Coordinatefiles/test4.txt" | grep -vE '#' | sed 's/://g' > "Coordinatefiles/$cleanfile.csv"
+
+      python3 lines.py "$cleanfile.csv" "$WIDTH" "$HEIGHT"
+
+      rm "Coordinatefiles/$cleanfile.csv" "Coordinatefiles/$cleanfile.png"   
+
   (( tasksDone += 1 ))
-  # Add some friendly output
   progressBar $taskCount $taskDone $text
+
+done
+
+rm "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
+
+for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
+do
+  mv "$f" "DWGfiles"
 done
 
 echo "\n...should be all done..."
 
-# for f in $FILES*.DWG
-# do
-#   "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r"
-#   pdffile=${f##*/}
-#   cleanfile=${pdffile%.*}
-#   convert -resize 2048 -density 300 "Helperfiles/$cleanfile.pdf" "PNG/$cleanfile.png"
-# done
 
+
+#Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
 log="./$1"
 [ -e "$log" ] && rm $log
 
