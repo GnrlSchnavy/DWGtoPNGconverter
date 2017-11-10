@@ -167,7 +167,7 @@ def draw(pixels, lines,argv):
     # width, sep, tail = argv[2].partition('.')
     # height,sep, tail = argv[3].partition('.')
     # canvas = (int(width), int(height))
-    canvas = (2046, 1300)
+    canvas = (2046, 2500)
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))

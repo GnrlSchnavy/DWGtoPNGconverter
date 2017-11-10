@@ -3,38 +3,33 @@
 Outerwallsflag="false"
 
 #Getting parameters
-while getopts x:y:w:h:spto option
+while getopts "x:y:w:h:s:pt:o" option
 do
   case "${option}"
   in
-  x)  XOFF=$OPTARG
-    parameters+=" -x "
-    parameters+=$XOFF;;
-  y)  YOFF=$OPTARG
-    parameters+=" -y "
-    parameters+=$YOFF;;
-  w)  WIDTH=$OPTARG
-    parameters+=" -w "
-    parameters+=$WIDTH;;
-  h)  HEIGHT=$OPTARG
-    parameters+=" -h "
-    parameters+=$HEIGHT;;
-  s)  SCALE=$OPTARG
-    parameters+=" -s "
-    parameters+=$SCALE;;
+  x) XOFF=$OPTARG;;
+  y) YOFF=$OPTARG;;
+  w) WIDTH=$OPTARG;;
+  h) HEIGHT=$OPTARG;;
+  s) SCALE=$OPTARG;;
   t) THRESHOLD=$OPTARG;;
   p) PPI=$OPTARG;;
   o) Outerwallsflag="true";;
   esac
 done
 
+
+
 #Check if PPI and THRESHOLD variables were set, if not, use default values
 if [ -z "$PPI" ]; then 
-  PPI=2400
+  PPI=1200
 fi 
 if [ -z "$THRESHOLD" ]; then 
   THRESHOLD=0.08
 fi 
+if [ -z "$SCALE" ]; then
+  SCALE=1000
+fi
 
 #Preparations to launch QCAD from command line
 FILES=$PWD/
@@ -152,6 +147,11 @@ echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE 
 echo "\n...please be patient..."
 
 #Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
+for f in $FILES*.dwg
+do
+mv -f "$f" "${f// /_}"
+done
+
 for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
   pdffile=${f##*/}
