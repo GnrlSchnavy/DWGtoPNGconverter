@@ -30,8 +30,13 @@
 
 	//---------------
 
-	if(getArgument(args,"-o") == "true"){					//turned on if outerwalls should also be printed
-		turnOnLayers(doc,di,wallLayers);					  //Turn on the selected layers
+	if(getArgument(args,"-o") == "true"){
+		if(wallLayers==""){
+			turnOnLayers(doc,di,textFile);
+		}		
+		else{
+			turnOnLayers(doc,di,wallLayers);					  //Turn on the selected layers
+		}			//turned on if outerwalls should also be printed
 		var scene = new RGraphicsSceneQt(di);			  
 		var view = new RGraphicsViewImage();
 		setPageVariables(doc,di,view,scene);			  //set offsets, page width and height, grayscale, hairlines etc.

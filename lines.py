@@ -180,11 +180,6 @@ def draw(pixels, lines,argv):
     pngfile , sep, tail = argv[1].partition('.')
     im.save("Coordinatefiles/"+pngfile+'.png')
 
-    image2 = Image.open('Coordinatefiles/5.png')
-    mask = image2.convert("L")
-    th = 210  # the value has to be adjusted for an image of interest
-    mask = mask.point(lambda i: i < th and 255)
-    mask.save('Coordinatefiles/pythonimagefinder2.png')
 
 if __name__ == '__main__':
     main(sys.argv)

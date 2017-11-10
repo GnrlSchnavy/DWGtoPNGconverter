@@ -30,7 +30,7 @@ done
 
 #Check if PPI and THRESHOLD variables were set, if not, use default values
 if [ -z "$PPI" ]; then 
-  PPI=1200
+  PPI=2400
 fi 
 if [ -z "$THRESHOLD" ]; then 
   THRESHOLD=0.08
@@ -46,11 +46,6 @@ taskCount=${#taskCount[@]}
 taskDone=0
 progressBarWidth=20
 
-pause () {
-  read -p "$*"
-}
-
-
 getCoordinates (){
    convert -density "$1"                \
       "Coordinatefiles/$2.pdf"      \
@@ -65,11 +60,13 @@ getCoordinates (){
        -negate      \
       "Coordinatefiles/$2.png"
 
-      convert "Coordinatefiles/$2.png" -auto-level "Coordinatefiles/1.png"
-      convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
-      convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
-      -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
-      convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
+      convert "Coordinatefiles/$2.png" -auto-level "Coordinatefiles/auto-level.png"
+      # convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
+      # convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
+      # -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
+      convert "Coordinatefiles/auto-level.png"  -fill red -fuzz 5% -draw "color 0,0 floodfill" -fill black +opaque red -fill white -opaque red -alpha off -morphology close diamond "Coordinatefiles/filled.png"
+      convert "Coordinatefiles/filled.png" -morphology edgein octagon:1 "Coordinatefiles/finallines.png"
+
 
     #   for i in `seq 1 1`;
     # do
@@ -80,9 +77,9 @@ getCoordinates (){
     #   convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
     # done 
 
-    convert "Coordinatefiles/5.png" -transparent black "Coordinatefiles/final.png"
+      convert "Coordinatefiles/finallines.png" -transparent black "Coordinatefiles/finaledges.png"
   
-      convert "Coordinatefiles/final.png" txt: > "Coordinatefiles/test1.txt"
+      convert "Coordinatefiles/finaledges.png" txt: > "Coordinatefiles/test1.txt"
 
       grep -v '(0,0,0,0)' "Coordinatefiles/test1.txt" > "Coordinatefiles/test2.txt"
       
@@ -224,7 +221,7 @@ fi
 
 done
 
-rm "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
+rm "Coordinates/filled.png" "Coordinates/finallines.png" "Coordinates/finaledges" "Coordinates/autolevel.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
 for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
