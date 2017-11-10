@@ -30,26 +30,25 @@
 
 	//---------------
 
-	turnOnLayers(doc,di,wallLayers);					  //Turn on the selected layers
-	var scene = new RGraphicsSceneQt(di);			  
-	var view = new RGraphicsViewImage();
-	setPageVariables(doc,di,view,scene);			  //set offsets, page width and height, grayscale, hairlines etc.
+	if(getArgument(args,"-o") == "true"){					//turned on if outerwalls should also be printed
+		turnOnLayers(doc,di,wallLayers);					  //Turn on the selected layers
+		var scene = new RGraphicsSceneQt(di);			  
+		var view = new RGraphicsViewImage();
+		setPageVariables(doc,di,view,scene);			  //set offsets, page width and height, grayscale, hairlines etc.
 
-	//Start export and creation of maps
-	var exporter = new Print(undefined, doc, view);	  
-	filename = inputfile.substring(inputfile.lastIndexOf("/")+1,inputfile.length-4);
-	path2 = path+"Coordinatefiles/"+filename+".pdf";
-	exporter.print(path2);							  //Export to PDF
-
+		//Start export and creation of maps
+		var exporter = new Print(undefined, doc, view);	  
+		filename = inputfile.substring(inputfile.lastIndexOf("/")+1,inputfile.length-4);
+		path2 = path+"Coordinatefiles/"+filename+".pdf";
+		exporter.print(path2);		
+	}
 }
 
 function getWallLayers(textFile){
 	var temp = "";
 	textFile = textFile.split("\n");
 	for (i = 0;i<textFile.length;i++){
-		// print("MESSAGE:"+textFile[i]);
 		if(textFile[i].substring(0,4)=="####"){
-			// print("MESSAGE:"+textFile[i].substring(4,textFile[i].length-1));
 			temp = temp.concat(textFile[i].substring(4,textFile[i].length)+"\n");
 		}
 	}

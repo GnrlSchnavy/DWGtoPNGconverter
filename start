@@ -1,8 +1,9 @@
 #!/bin/sh
 #-h for help
+Outerwallsflag="false"
 
 #Getting parameters
-while getopts x:y:w:h:s:v:p:t: option
+while getopts x:y:w:h:spto option
 do
   case "${option}"
   in
@@ -21,17 +22,15 @@ do
   s)  SCALE=$OPTARG
     parameters+=" -s "
     parameters+=$SCALE;;
-  v) VERBOSE=1;;
   t) THRESHOLD=$OPTARG;;
-  p) PPI=$OPTARG
-    ;;
+  p) PPI=$OPTARG;;
+  o) Outerwallsflag="true";;
   esac
 done
 
-
 #Check if PPI and THRESHOLD variables were set, if not, use default values
 if [ -z "$PPI" ]; then 
-  PPI=2400
+  PPI=1200
 fi 
 if [ -z "$THRESHOLD" ]; then 
   THRESHOLD=0.08
@@ -42,7 +41,7 @@ FILES=$PWD/
 binary="/Applications/QCAD-Pro.app/Contents/resources/qcad"
 shopt -s nullglob
 #Progressbar setup
-taskCount=(*.DWG)
+taskCount=(*.dwg)
 taskCount=${#taskCount[@]}
 taskDone=0
 progressBarWidth=20
@@ -51,6 +50,53 @@ pause () {
   read -p "$*"
 }
 
+
+getCoordinates (){
+   convert -density "$1"                \
+      "Coordinatefiles/$2.pdf"      \
+      -resize 2048                      \
+      -sharpen 0x1.0                    \
+      -colorspace Gray                  \
+      -quality 90                       \
+      -background white                 \
+      -alpha remove                     \
+      -negate       \
+      -threshold 0 \
+       -negate      \
+      "Coordinatefiles/$2.png"
+
+      convert "Coordinatefiles/$2.png" -auto-level "Coordinatefiles/1.png"
+      convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
+      convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
+      -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
+      convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
+
+    #   for i in `seq 1 1`;
+    # do
+    #   convert "Coordinatefiles/5.png" -auto-level "Coordinatefiles/1.png"
+    #   convert "Coordinatefiles/1.png" -canny 0x1+10%+30% "Coordinatefiles/2.png"
+    #   convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
+    #   -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
+    #   convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
+    # done 
+
+    convert "Coordinatefiles/5.png" -transparent black "Coordinatefiles/final.png"
+  
+      convert "Coordinatefiles/final.png" txt: > "Coordinatefiles/test1.txt"
+
+      grep -v '(0,0,0,0)' "Coordinatefiles/test1.txt" > "Coordinatefiles/test2.txt"
+      
+
+      grep -v 'graya(255,0)' "Coordinatefiles/test2.txt" > "Coordinatefiles/test3.txt"
+      
+
+      awk '{print $1}' "Coordinatefiles/test3.txt" > "Coordinatefiles/test4.txt"
+     
+
+      cat "Coordinatefiles/test4.txt" | grep -vE '#' | sed 's/://g' > "Coordinatefiles/$cleanfile.csv"
+
+      python3 lines.py "$cleanfile.csv" "$WIDTH" "$HEIGHT"
+}
 
 progressBar () {
   
@@ -77,12 +123,13 @@ progressBar () {
 }
 
 #Check and create extra directorys if needed
-[ -d "$DWGfiles" ] && echo "$DWGfiles directory already exists" || mkdir DWGfiles
-[ -d "$Coordinatefiles" ] && echo "$Coordinatefiles folder already exusts" || mkdir Coordinatefiles
-[ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
-[ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
-[ -d "$PRIMEPNG" ] && echo "PRIMEPNG folder already exists" || mkdir PRIMEPNG
-
+  [ -d "$DWGfiles" ] && echo "$DWGfiles directory already exists" || mkdir DWGfiles
+  [ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
+  [ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
+  [ -d "$PRIMEPNG" ] && echo "PRIMEPNG folder already exists" || mkdir PRIMEPNG
+  if [ "$Outerwallsflag" == "true" ];then
+      [ -d "$Coordinatefiles" ] && echo "$Coordinatefiles folder already exusts" || mkdir Coordinatefiles
+  fi
 #Creating helperfile and adding all backlog info to it.
 file="Helperfiles/Helperfile.txt"
 touch $file
@@ -104,18 +151,18 @@ awk '!a[$0]++' "layers.txt" >>$file
 
 
 #Just some debugging info for the user
-echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE . \nMore details can be found in the Helperfile inside the Helperfiles directory."
+echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE  \nMore details can be found in the Helperfile inside the Helperfiles directory."
 echo "\n...please be patient..."
 
 #Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
-for f in $FILES*.DWG  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
+for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
   pdffile=${f##*/}
   cleanfile=${pdffile%.*} 
   text=$(echo "$cleanfile done")
 
 #Start QCAD with given paramteres, returns a pdf file of the first .dwg file
-  "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-r" 2>$1 | grep "MESSAGE:" 
+  "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-o" "$Outerwallsflag" "-r" 2>$1 | grep "MESSAGE:" 
 
 #Convert pdf to PNG
   convert -density $PPI                 \
@@ -167,55 +214,9 @@ do
       "PRIMEPNG/$cleanfile.png"
 
 
-#Conversion for Prime ready floorplans
-   convert -density $PPI                \
-      "Coordinatefiles/$cleanfile.pdf"      \
-      -resize 2048                      \
-      -sharpen 0x1.0                    \
-      -colorspace Gray                  \
-      -quality 90                       \
-      -background white                 \
-      -alpha remove                     \
-      -negate       \
-      -threshold 0 \
-       -negate      \
-      "Coordinatefiles/$cleanfile.png"
-
-
-
-
-      convert "Coordinatefiles/$cleanfile.png" -auto-level "Coordinatefiles/1.png"
-      convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
-      convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
-      -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
-      convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
-
-      for i in `seq 1 3`;
-		do
-			convert 5.png -auto-level 1.png
-			convert 1.png -canny 0x1+10%+30% 2.png
-			convert 2.png -fill red -draw "color 0,0 floodfill" -alpha off \
-			-fill black +opaque red -fill white -opaque red 4.png
-			convert 4.png -morphology edgein octagon:1 5.png
-		done 
-
-	  convert "Coordinatefiles/5.png" -transparent black "Coordinatefiles/final.png"
-	
-      convert "Coordinatefiles/final.png" txt: > "Coordinatefiles/test1.txt"
-
-      grep -v '(0,0,0,0)' "Coordinatefiles/test1.txt" > "Coordinatefiles/test2.txt"
-      
-
-      grep -v 'graya(255,0)' "Coordinatefiles/test2.txt" > "Coordinatefiles/test3.txt"
-      
-
-      awk '{print $1}' "Coordinatefiles/test3.txt" > "Coordinatefiles/test4.txt"
-     
-
-      cat "Coordinatefiles/test4.txt" | grep -vE '#' | sed 's/://g' > "Coordinatefiles/$cleanfile.csv"
-
-      python3 lines.py "$cleanfile.csv" "$WIDTH" "$HEIGHT"
-
+if [ "$Outerwallsflag" == "true" ];then
+  getCoordinates $PPI $cleanfile
+fi
       # rm "Coordinatefiles/$cleanfile.csv" "Coordinatefiles/$cleanfile.png"   
 
   (( tasksDone += 1 ))
@@ -225,7 +226,7 @@ done
 
 rm "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
-for f in $FILES*.DWG  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
+for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
 do
   mv "$f" "DWGfiles"
 done
