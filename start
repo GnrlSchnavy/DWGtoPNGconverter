@@ -18,8 +18,6 @@ do
   esac
 done
 
-
-
 #Check if PPI and THRESHOLD variables were set, if not, use default values
 if [ -z "$PPI" ]; then 
   PPI=1200
@@ -147,6 +145,13 @@ echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE 
 echo "\n...please be patient..."
 
 #Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
+for f in $FILES*.DWG
+do
+  pdffile=${f##*/}
+  cleanfile=${pdffile%.*} 
+  mv -f "$f" "$cleanfile.dwg"
+done
+
 for f in $FILES*.dwg
 do
 mv -f "$f" "${f// /_}"
@@ -215,22 +220,21 @@ if [ "$Outerwallsflag" == "true" ];then
   getCoordinates $PPI $cleanfile
 fi
       # rm "Coordinatefiles/$cleanfile.csv" "Coordinatefiles/$cleanfile.png"   
-
   (( tasksDone += 1 ))
   progressBar $taskCount $taskDone $text
 
 done
 
-rm "Coordinates/filled.png" "Coordinates/finallines.png" "Coordinates/finaledges" "Coordinates/autolevel.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
-for f in $FILES*.dwg  #Case-sensitive. If the script doesn't find any files, maybe the files are .DWG instead of .dwg.
+for f in $FILES*.dwg  
 do
   mv "$f" "DWGfiles"
 done
 
+rm "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/finaledges.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
+
+
 echo "\n...should be all done..."
-
-
 
 #Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
 log="./$1"
