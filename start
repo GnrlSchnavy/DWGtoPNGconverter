@@ -20,10 +20,10 @@ done
 
 #Check if PPI and THRESHOLD variables were set, if not, use default values
 if [ -z "$PPI" ]; then 
-  PPI=1200
+  PPI=2400
 fi 
 if [ -z "$THRESHOLD" ]; then 
-  THRESHOLD=0.08
+  THRESHOLD=0.01
 fi 
 if [ -z "$SCALE" ]; then
   SCALE=1000
@@ -233,8 +233,38 @@ done
 
 rm "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/finaledges.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
+jq -s . Coordinatefiles/*.json > Coordinatefiles/something.json
+jq -c . Coordinatefiles/something.json > Coordinatefiles/minified.json 
 
 echo "\n...should be all done..."
+
+
+
+
+# for((j=950;j>-49 ;j-=50));
+#   do
+#       if [ "$j" -lt 20 ];then
+#         j=$((j+40))
+#       fi
+#       if [ "$j" -lt 10 ];then
+#         j=$((j+9))
+#       fi
+
+#   for ((i=200;i<=2400;i+=400)); 
+#   do 
+
+#       y=`bc <<< "scale=3; $j/1000"`
+#       echo "$i" "$y"
+#       converter "$i" "$y"
+#   done
+# done
+
+#Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
+# log="./$1"
+# [ -e "$log" ] && rm $log
+
+
+
 
 #Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
 log="./$1"

@@ -1,0 +1,47 @@
+--Command to run--
+
+./start -x -66000 -y 4000 -w 117 -h 34.5 -s 1000 -p 2400 -t 0.08
+
+ --Variables-- 
+
+-xoffset: -66000
+-yoffset: 4000
+-width:   117
+-height:  34.5
+-scale:   1000
+-PPI:     2400
+-Threshold 0.08
+
+--Active layers list for wall--
+
+to be filled with layers that will only show the wall
+
+--Active layer list--
+
+
+0
+A-ANNO-CATEGORY
+A-ANNO-EMPFIRST
+A-ANNO-EMPLAST
+####ZB-GB
+A-ANNO-ORGANIZATION
+A-COLS
+A-DOOR
+A-EQPM
+A-EQPM-FIXD
+A-FLOR-EVTR
+A-FLOR-LEVL
+A-FLOR-OTLN
+A-FLOR-STRS
+A-FURN-FILE
+A-FURN-FREE
+A-FURN-IDEN
+A-GLAZ
+A-TITLE
+A-WALL
+A-WALL-FULL
+A-WALL-MOVE
+Defpoints
+XRMNO
+I-FURN-EQPM
+A-—L-1

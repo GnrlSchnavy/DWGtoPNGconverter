@@ -14,12 +14,14 @@ linesList = []
 
 def main(argv):
     filename = sys.argv[1]
+    if filename.endswith('.csv'):
+        filename=filename.replace('.csv','')
     if(not os.path.isdir("Coordinatefiles")):
         os.makedirs("Coordinatefiles")
-    path = "Coordinatefiles/"+"final"+filename
+    path = "Coordinatefiles/"+filename+".json"
     f= open(path,"w+")
 
-    csvPath = "Coordinatefiles/"+filename
+    csvPath = "Coordinatefiles/"+filename+".csv"
     with open(csvPath, newline='') as csvfile:
         file = csv.reader(csvfile, delimiter=' ', quotechar='|')
 
@@ -94,11 +96,12 @@ def main(argv):
 
     draw(pixelList,linesList,argv)
 
-
-    for x in linesList:
-        f.write(json.dumps(x))
-    for x in pixelList:
-        f.write(json.dumps(x))
+    d={'lines':linesList,'pixels':pixelList}
+    f.write('{\"')
+    f.write(filename)
+    f.write('\":[')
+    f.write(json.dumps(d))
+    f.write("]}")
 
 def toText(list):
     str1 = ''.join(''.join(list))
@@ -179,6 +182,9 @@ def draw(pixels, lines,argv):
     im.thumbnail(thumb)
     pngfile , sep, tail = argv[1].partition('.')
     im.save("Coordinatefiles/"+pngfile+'.png')
+
+def combineAllFloors():
+    print("helloooo")
 
 
 if __name__ == '__main__':
