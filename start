@@ -117,6 +117,7 @@ progressBar () {
   [ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
   [ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
   [ -d "$PRIMEPNG" ] && echo "PRIMEPNG folder already exists" || mkdir PRIMEPNG
+  touch "Coordinatefiles/combined.json"
   if [ "$Outerwallsflag" == "true" ];then
       [ -d "$Coordinatefiles" ] && echo "$Coordinatefiles folder already exusts" || mkdir Coordinatefiles
   fi
@@ -190,7 +191,7 @@ do
      -compose over                      \
      -compose copy_opacity              \
      -composite                         \
-  -resize 2048                          \
+  -resize 2048                     \
   -sharpen 0x1.0                        \
   -colorspace Gray                      \
   -quality 90                           \
@@ -204,7 +205,7 @@ do
 #Conversion for Prime ready floorplans
    convert -density $PPI                \
       "Helperfiles/$cleanfile.pdf"      \
-      -resize 2048                      \
+      -resize 2048                   \
       -sharpen 0x1.0                    \
       -colorspace Gray                  \
       -quality 90                       \
@@ -228,13 +229,26 @@ done
 
 for f in $FILES*.dwg  
 do
+  ((counter++))
   mv "$f" "DWGfiles"
 done
 
 rm "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/finaledges.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
-jq -s . Coordinatefiles/*.json > Coordinatefiles/something.json
-jq -c . Coordinatefiles/something.json > Coordinatefiles/minified.json 
+#TODO
+#Grab every jason file after another,
+#instert BEFORE last bracket
+#jq -s add 1.json 2.json > output.json 
+Coordinatefiles=$PWD/Coordinatefiles/
+array=()
+for c in $Coordinatefiles*.json
+  do
+    array+=("$c")
+  done
+echo "${array[@]}"
+
+jq -s add "${array[@]}" > "Coordinatefiles/final.json"
+jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
 
 echo "\n...should be all done..."
 

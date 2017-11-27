@@ -94,14 +94,17 @@ def main(argv):
                     line[1] = temp
                 linesList.append(line)
 
-    draw(pixelList,linesList,argv)
+    # draw(pixelList,linesList,argv)
 
     d={'lines':linesList,'pixels':pixelList}
     f.write('{\"')
     f.write(filename)
-    f.write('\":[')
+    f.write('\":')
     f.write(json.dumps(d))
-    f.write("]}")
+    f.write("}")
+
+    # d={'lines':linesList,'pixels':pixelList}
+    # f.write(json.dumps(d))
 
 def toText(list):
     str1 = ''.join(''.join(list))
@@ -157,8 +160,6 @@ def isExistingPixel(toCheckPixel):
         if(pixel == toCheckPixel):
             return True
     return False
-
-
 
 def checkAlreadyScanned(pixel):
     for scannedpixel in scannedPixels:
