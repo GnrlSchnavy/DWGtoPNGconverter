@@ -37,7 +37,7 @@ A complete statement to run the program would look something like this.`./start 
 <h2>Philips example:</h2>
 The layers and commands (with the correct parameters) can be found at the end of this document. 
 
-When you have filled in all the parameters the script should do the rest of the job. Depending on how many layers and how big the original DWG file was, this can take up to 1 ~ 5 minutes per DWG. You can keep on working on something else while the script runs. 
+When you have filled in all the parameters the script should do the rest of the job. Depending on how many layers and how big the original DWG files were, this may take up to 1 ~ 5 minutes per DWG. You can keep on working on something else while the script runs. 
 The files will be put in their respective correct folders (PNG and Helperfiles). Also a standard Helperfile.txt will be created in the Helperfiles directory containing all the information that might be needed in the future. 
 
 The inner workings of the script are very straight forward. 
@@ -46,9 +46,10 @@ Create a Helperfile.txt in Helperfile directory and fills it with useful info.
 It finds a .dwg file. 
 Applies the layers from the layers.txt.
 Removes (as far as it is possible all the text). 
-Converts the file to a PDF into the Helperfiles directory
+Converts the file to a PDF into the Helperfiles and Coordinatefiles directory
 Converts the file to a DXF into the Helperfiles directory
 Converts the PDF to PNG into the PNG directory
+Converts PDF in Coordinatefiles directory to suitable PNG with outlines of the building.
 Repeat until all .dwg files are found and processed.
 
 
