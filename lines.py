@@ -4,9 +4,6 @@ import json
 import os
 import math
 from PIL import Image, ImageDraw, ImageFilter
-#todo
-# put this in the full program, why are some pixels missing?!!?!
-#find a way to fix outer
 
 pixelList = []
 scannedPixels = []
@@ -20,8 +17,8 @@ def main(argv):
         os.makedirs("Coordinatefiles")
     path = "Coordinatefiles/"+filename+".json"
     f= open(path,"w+")
-
     csvPath = "Coordinatefiles/"+filename+".csv"
+
     with open(csvPath, newline='') as csvfile:
         file = csv.reader(csvfile, delimiter=' ', quotechar='|')
 
@@ -94,17 +91,14 @@ def main(argv):
                     line[1] = temp
                 linesList.append(line)
 
-    # draw(pixelList,linesList,argv)
 
-    d={'lines':linesList,'pixels':pixelList}
+    floor={'lines':linesList,'pixels':pixelList}
     f.write('{\"')
     f.write(filename)
     f.write('\":')
-    f.write(json.dumps(d))
+    f.write(json.dumps(floor))
     f.write("}")
 
-    # d={'lines':linesList,'pixels':pixelList}
-    # f.write(json.dumps(d))
 
 def toText(list):
     str1 = ''.join(''.join(list))
@@ -168,10 +162,7 @@ def checkAlreadyScanned(pixel):
     return False
 
 def draw(pixels, lines,argv):
-    # width, sep, tail = argv[2].partition('.')
-    # height,sep, tail = argv[3].partition('.')
-    # canvas = (int(width), int(height))
-    canvas = (2046, 2500)
+    canvas = (2048, 2048)
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))

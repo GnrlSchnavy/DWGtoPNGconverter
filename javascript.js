@@ -28,8 +28,8 @@
 	print("\n\nMESSAGE1:file exported to " + path2 + "\n\n");
 	di.exportFile(path+"Helperfiles/"+filename+".dxf","DFX 2000");	//Export to dxf
 
-	//---------------
-
+	//This is sort of old code. It's nice to keep it in because for some buildings it is neccesary to turn of some layers to get a good outline of the outer walls.
+	//Doesn't do any harm to keep it in. this function just checks if there are, in the layers.txt file layers preceded with ####, if so, it will only use those layers to calculate the outer walls.
 	if(getArgument(args,"-o") == "true"){
 		if(wallLayers==""){
 			turnOnLayers(doc,di,textFile);
