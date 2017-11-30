@@ -81,33 +81,24 @@ mainConversion (){
 
 getCoordinates (){
    convert -density "$1"                \
-      "Coordinatefiles/$2.pdf"      \
-      -resize 2048x2048                      \
+      "Coordinatefiles/$2.pdf"          \
+      -resize 2048x2048                 \
       -sharpen 0x1.0                    \
       -colorspace Gray                  \
       -quality 90                       \
       -background white                 \
       -alpha remove                     \
-      -negate       \
-      -threshold 0 \
-       -negate      \
-      "Coordinatefiles/$2.png"
+      -negate                           \
+      -threshold 0                      \
+      -negate                          \
+      "Coordinatefiles/auto-level.png"
 
-      convert "Coordinatefiles/$2.png" -auto-level "Coordinatefiles/auto-level.png"
       # convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
       # convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
       # -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
       convert "Coordinatefiles/auto-level.png"  -fill red -fuzz 5% -draw "color 0,0 floodfill" -fill black +opaque red -fill white -opaque red -alpha off -morphology close diamond "Coordinatefiles/filled.png"
+      
       convert "Coordinatefiles/filled.png" -morphology edgein octagon:1 "Coordinatefiles/finallines.png"
-
-    #   for i in `seq 1 1`;
-    # do
-    #   convert "Coordinatefiles/5.png" -auto-level "Coordinatefiles/1.png"
-    #   convert "Coordinatefiles/1.png" -canny 0x1+10%+30% "Coordinatefiles/2.png"
-    #   convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
-    #   -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
-    #   convert "Coordinatefiles/4.png" -morphology edgein octagon:1 "Coordinatefiles/5.png"
-    # done 
 
       convert "Coordinatefiles/finallines.png" -transparent black "Coordinatefiles/finaledges.png"
   
