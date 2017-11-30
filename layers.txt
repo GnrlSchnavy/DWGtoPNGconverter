@@ -1,27 +1,50 @@
 
-0
-A-ANNO-CATEGORY
-A-ANNO-EMPFIRST
-A-ANNO-EMPLAST
-####ZB-GB
-A-ANNO-ORGANIZATION
-A-COLS
 A-DOOR
-A-EQPM
-A-EQPM-FIXD
-A-FLOR-EVTR
-A-FLOR-LEVL
-A-FLOR-OTLN
-A-FLOR-STRS
-A-FURN-FILE
-A-FURN-FREE
-A-FURN-IDEN
-A-GLAZ
-A-TITLE
-A-WALL
-A-WALL-FULL
-A-WALL-MOVE
-Defpoints
-XRMNO
-I-FURN-EQPM
-A-—L-1
+A-FURN
+A-FURN-PNLS
+A-FURN-WKSF
+A-WALL-EXT
+A-WALL-INT
+EC1 Area Names
+EC1 Area Numbers
+EC1 Area Polygons
+EC1 Area Square Footages
+EC1 Area Type Descs
+EC1 HR Names
+EC1 HR Numbers
+EC1 Space Business Group
+EC1 Space Division
+EC1 Space Function Descs
+EC1 Space Level 4
+EC1 Space NSN
+EC1 Space Names
+EC1 Space Numbers
+EC1 Space Polygons
+EC1 Space Sharing Descs
+EC1 Space Square Footages
+EC1 Space Status Descs
+EC1 Space Type Descs
+EC1 Tenant Descs
+EC1 Tenant Names
+EC1 UDA % Act Alloc Space Bldg
+EC1 UDA % Act Alloc Space Flr
+EC1 UDA Building Common Alloc
+EC1 UDA Comments
+EC1 UDA File Cabinet
+EC1 UDA Floor Common Alloc
+EC1 UDA Highlight MO
+EC1 UDA Modern Office Name
+EC1 UDA Prev Planned HC
+EC1 UDA Space Office NIA
+EC1 UDA Support Seat
+EC1 Zone Business Group
+EC1 Zone Division
+EC1 Zone Level 4
+EC1 Zone NSN
+EC1 Zone Names
+EC1 Zone Numbers
+EC1 Zone Polygons
+EC1 Zone Square Footages
+EC1 Zone Type Descs
+S-COLS
+SPID

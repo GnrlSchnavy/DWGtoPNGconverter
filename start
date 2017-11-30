@@ -1,5 +1,4 @@
 #!/bin/sh
-#-h for help
 Outerwallsflag="false"
 PPI=2400
 THRESHOLD=0.01
@@ -185,31 +184,35 @@ createDirectories(){
   fi
 }
 
+removeCapitalLetters(){
+  for f in $FILES*.DWG
+  do
+    pdffile=${f##*/}
+    cleanfile=${pdffile%.*} 
+    mv -f "$f" "$cleanfile.dwg"
+  done
+
+  for f in $FILES*.dwg
+  do
+  mv -f "$f" "${f// /_}"
+  done
+}
+
 createDirectories
 createHelperFile
+removeCapitalLetters
 
 echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE  \nMore details can be found in the Helperfile inside the Helperfiles directory."
 echo "\n...please be patient..."
 
 #Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
-for f in $FILES*.DWG
-do
-  pdffile=${f##*/}
-  cleanfile=${pdffile%.*} 
-  mv -f "$f" "$cleanfile.dwg"
-done
-
-for f in $FILES*.dwg
-do
-mv -f "$f" "${f// /_}"
-done
 
 for f in $FILES*.dwg  
 do
   pdffile=${f##*/}
   cleanfile=${pdffile%.*} 
   text=$(echo "$cleanfile done")
-	#Start QCAD with given paramteres, returns a pdf file of the first .dwg file
+	#Start QCAD with given paramteres.
   "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-o" "$Outerwallsflag" "-r" 2>$1 | grep "MESSAGE:" 
   mainConversion $cleanfile $PPI $THRESHOLD
 
@@ -218,7 +221,6 @@ if [ "$Outerwallsflag" == "true" ];then
 fi
   (( tasksDone += 1 ))
   progressBar $taskCount $taskDone $text
-
 done
 
 for f in $FILES*.dwg  
@@ -240,7 +242,6 @@ jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
 rm "Coordinatefiles/final.json" "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/finaledges.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
 echo "\n...should be all done..."
-
 #Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
 log="./$1"
 [ -e "$log" ] && rm $log

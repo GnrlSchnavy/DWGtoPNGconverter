@@ -98,7 +98,7 @@ def main(argv):
     f.write('\":')
     f.write(json.dumps(floor))
     f.write("}")
-
+    draw(pixelList,linesList,argv)
 
 def toText(list):
     str1 = ''.join(''.join(list))
@@ -161,7 +161,7 @@ def checkAlreadyScanned(pixel):
             return True
     return False
 
-def draw(pixels, lines,argv):
+def draw(pixelList, linesList,argv):
     canvas = (2048, 2048)
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
@@ -173,7 +173,7 @@ def draw(pixels, lines,argv):
         draw.point([pixel[0],pixel[1]],fill="black")
     im.thumbnail(thumb)
     pngfile , sep, tail = argv[1].partition('.')
-    im.save("Coordinatefiles/"+pngfile+'.png')
+    im.save("Coordinatefiles/"+pngfile+"outline"+'.png')
 
 
 if __name__ == '__main__':
