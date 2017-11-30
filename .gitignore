@@ -3,3 +3,6 @@
 /PNG/*
 /PRIMEPNG/*
 /Helperfiles/*
+.idea/*
+.idea
+.DS_Store

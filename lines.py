@@ -175,9 +175,6 @@ def draw(pixels, lines,argv):
     pngfile , sep, tail = argv[1].partition('.')
     im.save("Coordinatefiles/"+pngfile+'.png')
 
-def combineAllFloors():
-    print("helloooo")
-
 
 if __name__ == '__main__':
     main(sys.argv)
