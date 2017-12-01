@@ -1,6 +1,6 @@
 #!/bin/sh
 Outerwallsflag="false"
-PPI=2400
+PPI=600
 THRESHOLD=0.01
 BLOBSIZE=100
 SCALE=1000
@@ -12,7 +12,6 @@ taskCount=${#taskCount[@]}
 taskDone=0
 progressBarWidth=20
 
-#Getting parameters
 while getopts "x:y:w:h:s:p:t:b: o" option
 do
   case "${option}"
@@ -31,42 +30,39 @@ done
 
 mainConversion (){
 		
-  #Convert pdf to PNG
-  convert -density $2                 \
-  "Helperfiles/$1.pdf"                \
-  -alpha off                          \
-  -negate                             \
-  \(                                  \
-  -clone 0                         \
-  -fill "#000000"                  \
-  -colorize 100                    \
-  \)                                  \
-  \(                                  \
-  -clone 0,1                       \
-  -compose difference              \
-  -composite                       \
-  -separate                        \
-  +channel                         \
-  -evaluate-sequence max           \
-  -auto-level                      \
-  \)                                  \
-  -delete 1                          \
-  -alpha off                         \
-  -compose over                      \
-  -compose copy_opacity              \
-  -composite                         \
+  convert -density $2                   \
+  "Helperfiles/$1.pdf"                  \
+  -alpha off                            \
+  -negate                               \
+  \(                                    \
+  -clone 0                              \
+  -fill "#000000"                       \
+  -colorize 100                         \
+  \)                                    \
+  \(                                    \
+  -clone 0,1                            \
+  -compose difference                   \
+  -composite                            \
+  -separate                             \
+  +channel                              \
+  -evaluate-sequence max                \
+  -auto-level                           \
+  \)                                    \
+  -delete 1                             \
+  -alpha off                            \
+  -compose over                         \
+  -compose copy_opacity                 \
+  -composite                            \
   -resize 2048x2048                     \
   -sharpen 0x1.0                        \
   -colorspace Gray                      \
   -quality 90                           \
   "PNG/$1.png"
 
-	#Just a small extra conversion to make sure a pixel is either white or completely transparant
   convert "PNG/$1.png"          \
   -channel A -fx "p*(p>$3?22:0)"\
   "PNG/$1.png"
 
-	#Conversion for Prime ready floorplans
    convert -density $2                  \
       "Helperfiles/$1.pdf"              \
       -resize 2048x2048                 \
@@ -95,9 +91,6 @@ getCoordinates (){
       -negate                          \
       "Coordinatefiles/auto-level.png"
 
-      # convert "Coordinatefiles/1.png" -canny 0x1+90%+1% "Coordinatefiles/2.png"
-      # convert "Coordinatefiles/2.png" -fill red -draw "color 0,0 floodfill" -alpha off \
-      # -fill black +opaque red -fill white -opaque red "Coordinatefiles/4.png"
       convert "Coordinatefiles/auto-level.png"  -fill red -fuzz 5% -draw "color 0,0 floodfill" -fill black +opaque red -fill white -opaque red -alpha off -morphology close diamond "Coordinatefiles/filled.png"
       
       convert "Coordinatefiles/filled.png" -morphology edgein octagon:1 "Coordinatefiles/finallines.png"
@@ -107,13 +100,10 @@ getCoordinates (){
       convert "Coordinatefiles/finaledges.png" txt: > "Coordinatefiles/test1.txt"
 
       grep -v '(0,0,0,0)' "Coordinatefiles/test1.txt" > "Coordinatefiles/test2.txt"
-      
 
       grep -v 'graya(255,0)' "Coordinatefiles/test2.txt" > "Coordinatefiles/test3.txt"
-      
 
       awk '{print $1}' "Coordinatefiles/test3.txt" > "Coordinatefiles/test4.txt"
-     
 
       cat "Coordinatefiles/test4.txt" | grep -vE '#' | sed 's/://g' > "Coordinatefiles/$cleanfile.csv"
 
@@ -122,22 +112,19 @@ getCoordinates (){
 
 progressBar () {
   
-  # Calculate number of fill/empty slots in the bar
-  progress=$(echo "$progressBarWidth/$taskCount*$tasksDone" | bc -l)  
+  progress=$(echo "$progressBarWidth/$taskCount*$tasksDone" | bc -l)
   fill=$(printf "%.0f\n" $progress)
   if [ $fill -gt $progressBarWidth ]; then
     fill=$progressBarWidth
   fi
   empty=$(($fill-$progressBarWidth))
 
-  # Percentage Calculation
   percent=$(echo "100/$taskCount*$tasksDone" | bc -l)
   percent=$(printf "%0.2f\n" $percent)
   if [ $(echo "$percent>100" | bc) -gt 0 ]; then
     percent="100.00"
   fi
 
-  # Output to screen
   printf "\r["
   printf "%${fill}s" '' | tr ' ' ▉
   printf "%${empty}s" '' | tr ' ' ░
@@ -145,11 +132,10 @@ progressBar () {
 }
 
 createHelperFile(){
-  #Creating helperfile and adding all backlog info to it.
   file="Helperfiles/Helperfile.txt"
   touch $file
   echo "--Command to run--\n" > $file
-  echo "./start -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD" >> $file
+  echo "./start -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD -b $BLOBSIZE" >> $file
   echo "\n --Variables-- \n" >> $file
   echo "-xoffset: $XOFF"  >> $file
   echo "-yoffset: $YOFF"  >> $file
@@ -158,6 +144,7 @@ createHelperFile(){
   echo "-scale:   $SCALE" >> $file
   echo "-PPI:     $PPI" >> $file
   echo "-Threshold $THRESHOLD" >> $file
+  echo "-BLOBSIZE $BLOBSIZE" >> $file
   layer="./layers.txt"
   echo "\n--Active layers list for wall--\n" >> $file
   echo "to be filled with layers that will only show the wall" >> $file
@@ -166,7 +153,6 @@ createHelperFile(){
 }
 
 createDirectories(){
-  #Check and create extra directorys if needed
   [ -d "$DWGfiles" ] && echo "$DWGfiles directory already exists" || mkdir DWGfiles
   [ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
   [ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
@@ -198,15 +184,12 @@ removeCapitalLetters
 echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD -b $BLOBSIZE -o $Outerwallsflag \nMore details can be found in the Helperfile inside the Helperfiles directory."
 echo "\n...please be patient..."
 
-#Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
-
 for f in $FILES*.dwg  
 do
   pdffile=${f##*/}
   cleanfile=${pdffile%.*} 
   text=$(echo "$cleanfile done")
-	#Start QCAD with given paramteres.
-  "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-o" "$Outerwallsflag" "-r" 2>$1 | grep "MESSAGE:" 
+  "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-o" "$Outerwallsflag" "-r" 2>$1 | grep "MESSAGE:"
   mainConversion $cleanfile $PPI $THRESHOLD
 
 if [ "$Outerwallsflag" == "true" ];then

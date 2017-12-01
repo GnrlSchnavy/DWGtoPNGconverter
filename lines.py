@@ -12,6 +12,7 @@ linesList = []
 pixellijst = []
 gevondenpixels = []
 bloblist = []
+
 if len(sys.argv)<3:
     blobsize = 100
 else:
@@ -48,7 +49,6 @@ def main(argv):
             pixelList.append(pixel)
 
     for pixel in pixelList:
-
         if(not checkAlreadyScanned(pixel)):
             if(hasRightPixel(pixel)):
                 line = [0, 0]
@@ -146,13 +146,13 @@ def getSurroundingPixel(pixel, pixellijst):
 
 def hasSurroundingPixel(pixel,pixellijst):
     if ([pixel[0] + 1 , pixel[1]] in pixellijst or
-            [pixel[0] + 1 , pixel[1] - 1] in pixellijst  or
-            [pixel[0] + 1 , pixel[1] + 1] in pixellijst or
-            [pixel[0] , pixel[1] + 1] in pixellijst or
-            [pixel[0] , pixel[1] - 1] in pixellijst or
-            [pixel[0] - 1 , pixel[1] + 1] in pixellijst or
-            [pixel[0] - 1 , pixel[1] - 1] in pixellijst or
-            [pixel[0] - 1 , pixel[1]] in pixellijst):
+        [pixel[0] + 1 , pixel[1] - 1] in pixellijst  or
+        [pixel[0] + 1 , pixel[1] + 1] in pixellijst or
+        [pixel[0] , pixel[1] + 1] in pixellijst or
+        [pixel[0] , pixel[1] - 1] in pixellijst or
+        [pixel[0] - 1 , pixel[1] + 1] in pixellijst or
+        [pixel[0] - 1 , pixel[1] - 1] in pixellijst or
+        [pixel[0] - 1 , pixel[1]] in pixellijst):
         return True
     else:
         return False
