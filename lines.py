@@ -2,17 +2,20 @@ import csv
 import sys
 import json
 import os
-import math
+from PIL import Image, ImageDraw
 
-from PIL import Image, ImageDraw, ImageFilter
 sys.setrecursionlimit(20000)
+
 pixelList = []
 scannedPixels = []
 linesList = []
 pixellijst = []
 gevondenpixels = []
-
-
+bloblist = []
+if len(sys.argv)<3:
+    blobsize = 100
+else:
+    blobsize = sys.argv[2]
 
 def main(argv):
     filename = sys.argv[1]
@@ -33,13 +36,11 @@ def main(argv):
             coordinate=[int(xCoordinate),int(yCoordinate)]
             pixellijst.append(coordinate)
 
-    bloblist = []
-
     for pixel in pixellijst:
         blob = []
         if (not pixel in gevondenpixels):
-            checkSurroundingPixels(pixel, 0, blob)
-        if(len(blob)>500):
+            checkSurroundingPixels(pixel, blob)
+        if(len(blob)>int(blobsize)):
             bloblist.append(blob)
 
     for blob in bloblist:
@@ -119,7 +120,7 @@ def main(argv):
     draw(pixelList,linesList,argv)
 
 
-def checkSurroundingPixels(pixel, counter, blob):
+def checkSurroundingPixels(pixel, blob):
     if (pixel in pixellijst and not pixel in gevondenpixels and not pixel in blob):blob.append(pixel)
     if(not hasSurroundingPixel(pixel,pixellijst)):
         return blob
@@ -129,7 +130,7 @@ def checkSurroundingPixels(pixel, counter, blob):
                 blob.append(surroundingpixel)
                 gevondenpixels.append(surroundingpixel)
                 pixellijst.remove(surroundingpixel)
-                checkSurroundingPixels(surroundingpixel, counter+1,blob)
+                checkSurroundingPixels(surroundingpixel,blob)
 
 def getSurroundingPixel(pixel, pixellijst):
     tempPixelArray = []
