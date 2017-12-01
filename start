@@ -193,7 +193,7 @@ createDirectories
 createHelperFile
 removeCapitalLetters
 
-echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE  \nMore details can be found in the Helperfile inside the Helperfiles directory."
+echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI \nMore details can be found in the Helperfile inside the Helperfiles directory."
 echo "\n...please be patient..."
 
 #Loop over all the .dwg files that are found. Parse the filenames so everything can be used locally in any given directory
@@ -230,7 +230,7 @@ for c in $Coordinatefiles*.json
 jq -s add "${array[@]}" > "Coordinatefiles/final.json"
 jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
 
-rm "Coordinatefiles/final.json" "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/finaledges.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
+rm "Coordinatefiles/final.json" "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
 echo "\n...should be all done..."
 #Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.

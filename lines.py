@@ -3,11 +3,16 @@ import sys
 import json
 import os
 import math
-from PIL import Image, ImageDraw, ImageFilter
 
+from PIL import Image, ImageDraw, ImageFilter
+sys.setrecursionlimit(20000)
 pixelList = []
 scannedPixels = []
 linesList = []
+pixellijst = []
+gevondenpixels = []
+
+
 
 def main(argv):
     filename = sys.argv[1]
@@ -26,7 +31,20 @@ def main(argv):
             xCoordinate=row[0].split(',')[0]
             yCoordinate=row[0].split(',')[1]
             coordinate=[int(xCoordinate),int(yCoordinate)]
-            pixelList.append(coordinate)
+            pixellijst.append(coordinate)
+
+    bloblist = []
+
+    for pixel in pixellijst:
+        blob = []
+        if (not pixel in gevondenpixels):
+            checkSurroundingPixels(pixel, 0, blob)
+        if(len(blob)>500):
+            bloblist.append(blob)
+
+    for blob in bloblist:
+        for pixel in blob:
+            pixelList.append(pixel)
 
     for pixel in pixelList:
 
@@ -35,11 +53,11 @@ def main(argv):
                 line = [0, 0]
                 line[0]=[pixel[0],pixel[1]]
                 temp=pixel
-                if (isExistingPixel(pixel) and not moreThanOneSurroundingPixel(pixel)):
+                if (pixel in pixelList and not moreThanOneSurroundingPixel(pixel)):
                     scannedPixels.append(pixel)
                     pixelList.remove(pixel)
                 while(hasRightPixel(temp)):
-                    if(isExistingPixel(temp) and not moreThanOneSurroundingPixel(temp)):
+                    if(temp in pixelList and not moreThanOneSurroundingPixel(temp)):
                         scannedPixels.append(temp)
                         pixelList.remove(temp)
                     temp = [temp[0] + 1, temp[1]]
@@ -50,11 +68,11 @@ def main(argv):
                 line = [0, 0]
                 line[0]=[pixel[0],pixel[1]]
                 temp=pixel
-                if (isExistingPixel(pixel) and not moreThanOneSurroundingPixel(pixel)):
+                if (pixel in pixelList and not moreThanOneSurroundingPixel(pixel)):
                     scannedPixels.append(pixel)
                     pixelList.remove(pixel)
                 while(hasLowerPixel(temp)):
-                    if (isExistingPixel(temp) and not moreThanOneSurroundingPixel(temp)):
+                    if (temp in pixelList and not moreThanOneSurroundingPixel(temp)):
                         scannedPixels.append(temp)
                         pixelList.remove(temp)
                     temp=[temp[0],temp[1]+1]
@@ -65,11 +83,11 @@ def main(argv):
                 line = [0, 0]
                 line[0] = [pixel[0], pixel[1]]
                 temp = pixel
-                if (isExistingPixel(pixel) and not moreThanOneSurroundingPixel(pixel)):
+                if (pixel in pixelList and not moreThanOneSurroundingPixel(pixel)):
                     scannedPixels.append(pixel)
                     pixelList.remove(pixel)
                 while (hasLowerLeftPixel(temp)):
-                    if (isExistingPixel(temp) and not moreThanOneSurroundingPixel(temp)):
+                    if (temp in pixelList and not moreThanOneSurroundingPixel(temp)):
                         scannedPixels.append(temp)
                         pixelList.remove(temp)
                     temp = [temp[0]-1, temp[1] + 1]
@@ -80,11 +98,11 @@ def main(argv):
                 line = [0, 0]
                 line[0] = [pixel[0], pixel[1]]
                 temp = pixel
-                if (isExistingPixel(pixel) and not moreThanOneSurroundingPixel(pixel)):
+                if (pixel in pixelList and not moreThanOneSurroundingPixel(pixel)):
                     scannedPixels.append(pixel)
                     pixelList.remove(pixel)
                 while (hasLowerRightPixel(temp)):
-                    if (isExistingPixel(temp) and not moreThanOneSurroundingPixel(temp)):
+                    if (temp in pixelList and not moreThanOneSurroundingPixel(temp)):
                         scannedPixels.append(temp)
                         pixelList.remove(temp)
                     temp = [temp[0]+1, temp[1] + 1]
@@ -100,59 +118,85 @@ def main(argv):
     f.write("}")
     draw(pixelList,linesList,argv)
 
+
+def checkSurroundingPixels(pixel, counter, blob):
+    if (pixel in pixellijst and not pixel in gevondenpixels and not pixel in blob):blob.append(pixel)
+    if(not hasSurroundingPixel(pixel,pixellijst)):
+        return blob
+    else:
+        for surroundingpixel in getSurroundingPixel(pixel,pixellijst):
+            if(surroundingpixel in pixellijst and not surroundingpixel in gevondenpixels and not surroundingpixel in blob):
+                blob.append(surroundingpixel)
+                gevondenpixels.append(surroundingpixel)
+                pixellijst.remove(surroundingpixel)
+                checkSurroundingPixels(surroundingpixel, counter+1,blob)
+
+def getSurroundingPixel(pixel, pixellijst):
+    tempPixelArray = []
+    if ( [pixel[0] + 1 , pixel[1]] in pixellijst):tempPixelArray.append([pixel[0] + 1 , pixel[1]])
+    if ( [pixel[0] + 1 , pixel[1] - 1] in pixellijst ):tempPixelArray.append([pixel[0] + 1 , pixel[1] - 1])
+    if ( [pixel[0] + 1 , pixel[1] + 1] in pixellijst ):tempPixelArray.append([pixel[0] + 1 , pixel[1] + 1])
+    if ( [pixel[0] , pixel[1] + 1] in pixellijst ):tempPixelArray.append([pixel[0], pixel[1] + 1])
+    if ( [pixel[0] , pixel[1] - 1] in pixellijst ):tempPixelArray.append([pixel[0], pixel[1] - 1])
+    if ( [pixel[0] - 1 , pixel[1] + 1] in pixellijst ):tempPixelArray.append([pixel[0] - 1 , pixel[1] + 1])
+    if ( [pixel[0] - 1 , pixel[1] - 1] in pixellijst ):tempPixelArray.append([pixel[0] - 1 , pixel[1] - 1])
+    if ( [pixel[0] - 1 , pixel[1]] in pixellijst ):tempPixelArray.append([pixel[0] - 1 , pixel[1]])
+    return tempPixelArray
+
+def hasSurroundingPixel(pixel,pixellijst):
+    if ([pixel[0] + 1 , pixel[1]] in pixellijst or
+            [pixel[0] + 1 , pixel[1] - 1] in pixellijst  or
+            [pixel[0] + 1 , pixel[1] + 1] in pixellijst or
+            [pixel[0] , pixel[1] + 1] in pixellijst or
+            [pixel[0] , pixel[1] - 1] in pixellijst or
+            [pixel[0] - 1 , pixel[1] + 1] in pixellijst or
+            [pixel[0] - 1 , pixel[1] - 1] in pixellijst or
+            [pixel[0] - 1 , pixel[1]] in pixellijst):
+        return True
+    else:
+        return False
+
 def toText(list):
     str1 = ''.join(''.join(list))
     return str1
 
 def moreThanOneSurroundingPixel(pixel):
     surroundingpixels=0
-    # print(pixel)
-    if(isExistingPixel([pixel[0]+1,pixel[1]])):
-        surroundingpixels+=1
-    if(isExistingPixel([pixel[0],pixel[1]+1])):
-        surroundingpixels+=1
-    if(isExistingPixel([pixel[0]+1,pixel[1]-1])):
-        surroundingpixels+=1
-    if(isExistingPixel([pixel[0]+1,pixel[1]+1])):
-        surroundingpixels+=1
-    if(isExistingPixel([pixel[0]-1,pixel[1]+1])):
-        surroundingpixels+=1
-    # print(surroundingpixels)
+    if ( [pixel[0] + 1 , pixel[1]] in pixellijst):surroundingpixels+=1
+    if ( [pixel[0] + 1 , pixel[1] - 1] in pixellijst ):surroundingpixels+=1
+    if ( [pixel[0] + 1 , pixel[1] + 1] in pixellijst ):surroundingpixels+=1
+    if ( [pixel[0] , pixel[1] + 1] in pixellijst ):surroundingpixels+=1
+    if ( [pixel[0] , pixel[1] - 1] in pixellijst ):surroundingpixels+=1
+    if ( [pixel[0] - 1 , pixel[1] + 1] in pixellijst ):surroundingpixels+=1
+    if ( [pixel[0] - 1 , pixel[1] - 1] in pixellijst ):surroundingpixels+=1
+    if ( [pixel[0] - 1 , pixel[1]] in pixellijst ):surroundingpixels+=1
     if(surroundingpixels>2):
-        # print(pixel, "has surrounding")
         return True
     else:
         return False
 
 def hasLowerPixel(pixel):
     lowerPixel = [pixel[0],pixel[1]+1]
-    if(isExistingPixel(lowerPixel)):
+    if(lowerPixel in pixelList):
         return True
     return False
 
 def hasRightPixel(pixel):
     rightpixel = [pixel[0]+1,pixel[1]]
-    if(isExistingPixel(rightpixel)):
+    if(rightpixel in pixelList):
         return True
     return False
 
 def hasLowerLeftPixel(pixel):
     lowerLeftPixel = [pixel[0]-1,pixel[1]+1]
-    if(isExistingPixel(lowerLeftPixel)):
+    if(lowerLeftPixel in pixelList):
         return True
     return False
 
 def hasLowerRightPixel(pixel):
     lowerRightPixel = [pixel[0] + 1, pixel[1] + 1]
-    if (isExistingPixel(lowerRightPixel)):
+    if (lowerRightPixel in pixelList):
         return True
-    return False
-
-def isExistingPixel(toCheckPixel):
-    # print(toCheckPixel)
-    for pixel in pixelList:
-        if(pixel == toCheckPixel):
-            return True
     return False
 
 def checkAlreadyScanned(pixel):
@@ -162,7 +206,7 @@ def checkAlreadyScanned(pixel):
     return False
 
 def draw(pixelList, linesList,argv):
-    canvas = (2048, 2048)
+    canvas = (2048,2048)
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))
@@ -174,7 +218,6 @@ def draw(pixelList, linesList,argv):
     im.thumbnail(thumb)
     pngfile , sep, tail = argv[1].partition('.')
     im.save("Coordinatefiles/"+pngfile+"outline"+'.png')
-
 
 if __name__ == '__main__':
     main(sys.argv)
