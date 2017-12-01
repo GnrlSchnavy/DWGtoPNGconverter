@@ -153,14 +153,22 @@ createHelperFile(){
 }
 
 createDirectories(){
-  [ -d "$DWGfiles" ] && echo "$DWGfiles directory already exists" || mkdir DWGfiles
-  [ -d "$PNG" ] && echo "PNG folder already exists" || mkdir PNG
-  [ -d "$Helperfiles" ] && echo "Helperfiles folder already exists" || mkdir Helperfiles
-  [ -d "$PRIMEPNG" ] && echo "PRIMEPNG folder already exists" || mkdir PRIMEPNG
-  touch "Coordinatefiles/combined.json"
-  if [ "$Outerwallsflag" == "true" ];then
-      [ -d "$Coordinatefiles" ] && echo "$Coordinatefiles folder already exusts" || mkdir Coordinatefiles
+  if [[ ! -e "$DWGfiles" ]]; then
+    mkdir DWGfiles
   fi
+    if [[ ! -e "$PNG" ]]; then
+    mkdir PNG
+  fi
+    if [[ ! -e "$Helperfiles" ]]; then
+    mkdir Helperfiles
+  fi
+    if [[ ! -e "$PRIMEPNG" ]]; then
+    mkdir PRIMEPNG
+  fi
+     if [[ ! -e "Coordinatefiles" ]]; then
+    mkdir Coordinatefiles
+  fi
+  touch "Coordinatefiles/combined.json"
 }
 
 removeCapitalLetters(){
