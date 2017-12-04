@@ -12,11 +12,16 @@ linesList = []
 pixellijst = []
 gevondenpixels = []
 bloblist = []
-
 if len(sys.argv)<3:
     blobsize = 100
 else:
     blobsize = sys.argv[2]
+pngwidth=int(sys.argv[3])
+pngheigth=int(sys.argv[4])
+print(pngwidth,"-pngwidth")
+print(pngheigth,"-pngheight")
+
+
 
 def main(argv):
     filename = sys.argv[1]
@@ -109,7 +114,6 @@ def main(argv):
                     temp = [temp[0]+1, temp[1] + 1]
                     line[1] = temp
                 linesList.append(line)
-
 
     floor={'lines':linesList,'pixels':pixelList}
     f.write('{\"')
@@ -207,7 +211,7 @@ def checkAlreadyScanned(pixel):
     return False
 
 def draw(pixelList, linesList,argv):
-    canvas = (2048,2048)
+    canvas = (pngwidth,pngheigth)
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))

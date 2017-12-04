@@ -1,32 +1,28 @@
  function main(){ 
 
-	//Start imports
 	include("scripts/File/Print/Print.js");
 	var path = prepareDirectory(getArgument(args,"-f"));
 
-	//Start document initiation
 	var doc = new RDocument(new RMemoryStorage(), new RSpatialIndexNavel());
 	var di = new RDocumentInterface(doc);
 	doc.setUnit(RS.Millimeter);
 
-	//Do import, fix layers and remove text
-	var textFile = readTextFile(path+'layers.txt');   //Read layers from text file
+	var textFile = readTextFile(path+'layers.txt');
 	var wallLayers = getWallLayers(textFile);
-	importFiles(doc, di);							  //Import the dwg file passed through the bash script
-	removeText(doc,di);								  //Remove all the text and text-based elements from the drawing
+	importFiles(doc, di);
+	removeText(doc,di);
 	
-	turnOnLayers(doc,di,textFile);					  //Turn on the selected layers
+	turnOnLayers(doc,di,textFile);
 	var scene = new RGraphicsSceneQt(di);			  
 	var view = new RGraphicsViewImage();
-	setPageVariables(doc,di,view,scene);			  //set offsets, page width and height, grayscale, hairlines etc.
+	setPageVariables(doc,di,view,scene);
 
-	//Start export and creation of maps
-	var exporter = new Print(undefined, doc, view);	  
+	var exporter = new Print(undefined, doc, view);
 	filename = inputfile.substring(inputfile.lastIndexOf("/")+1,inputfile.length-4);
 	path2 = path+"Helperfiles/"+filename+".pdf";
 	exporter.print(path2);							  //Export to PDF
 	print("\n\nMESSAGE1:file exported to " + path2 + "\n\n");
-	di.exportFile(path+"Helperfiles/"+filename+".dxf","DFX 2000");	//Export to dxf
+	di.exportFile(path+"Helperfiles/"+filename+".dxf","DFX 2000");
 
 	//This is sort of old code. It's nice to keep it in because for some buildings it is neccesary to turn of some layers to get a good outline of the outer walls.
 	//Doesn't do any harm to keep it in. this function just checks if there are, in the layers.txt file layers preceded with ####, if so, it will only use those layers to calculate the outer walls.
@@ -35,14 +31,13 @@
 			turnOnLayers(doc,di,textFile);
 		}		
 		else{
-			turnOnLayers(doc,di,wallLayers);					  //Turn on the selected layers
-		}			//turned on if outerwalls should also be printed
+			turnOnLayers(doc,di,wallLayers);
+		}
 		var scene = new RGraphicsSceneQt(di);			  
 		var view = new RGraphicsViewImage();
-		setPageVariables(doc,di,view,scene);			  //set offsets, page width and height, grayscale, hairlines etc.
+		setPageVariables(doc,di,view,scene);
 
-		//Start export and creation of maps
-		var exporter = new Print(undefined, doc, view);	  
+		var exporter = new Print(undefined, doc, view);
 		filename = inputfile.substring(inputfile.lastIndexOf("/")+1,inputfile.length-4);
 		path2 = path+"Coordinatefiles/"+filename+".pdf";
 		exporter.print(path2);		
@@ -244,7 +239,6 @@ function importFiles(doc,di){
 		inputfile = getArgument(args, "-f");
 		print("\n\nMESSAGE1:found file " + inputfile + " for processing\n\n");
 		di.importFile(inputfile);
-		// verify import:
 		if (di.importFile(inputfile) != RDocumentInterface.IoErrorNoError) {
 			print("something went wrong with import");
 		}

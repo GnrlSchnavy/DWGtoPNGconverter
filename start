@@ -107,7 +107,12 @@ getCoordinates (){
 
       cat "Coordinatefiles/test4.txt" | grep -vE '#' | sed 's/://g' > "Coordinatefiles/$cleanfile.csv"
 
-      python3 lines.py "$cleanfile.csv" "$BLOBSIZE"
+      width=$(identify -format '%w' "Coordinatefiles/finaledges.png")
+      height=$(identify -format '%h' "Coordinatefiles.finaledges.png")
+
+      echo "$width $height"
+
+      python3 lines.py "$cleanfile.csv" "$BLOBSIZE" "$width" "$height"
 }
 
 progressBar () {
@@ -153,6 +158,8 @@ createHelperFile(){
 }
 
 createDirectories(){
+  rmdir "Coordinatefiles/combined.json"
+  rmdir "Coordinatefiles/minified.json"
   if [[ ! -e "$DWGfiles" ]]; then
     mkdir DWGfiles
   fi
