@@ -2,38 +2,41 @@ import csv
 import sys
 import json
 import os
+import glob
 from PIL import Image, ImageDraw
 
 sys.setrecursionlimit(20000)
 
 
 blobsize = 100
-buildingcount=1
 pixelList = []
 scannedPixels = []
 linesList = []
 allPixels = []
 gevondenpixels = []
 bloblist = []
-if len(sys.argv)<3:
-    buildingcount = 1
-else:
-    buildingcount = sys.argv[2]
-pngwidth=int(sys.argv[3])
-pngheigth=int(sys.argv[4])
+buildingcount = sys.argv[1]
+pngwidth=int(sys.argv[2])
+pngheigth=int(sys.argv[3])
 
-def main(argv):
+def main():
+    path="Coordinatefiles/*.csv"
+    for fname in glob.glob(path):
+        global pixelList, scannedPixels, linesList, allPixels,gevondenpixels,bloblist
+        pixelList, scannedPixels, linesList, allPixels, gevondenpixels, bloblist = [[],[],[],[],[],[]]
+        start(fname)
 
-    filename = sys.argv[1]
+def start(fname):
+
+    filename = fname.rsplit('/',1)[1]
     if filename.endswith('.csv'):
         filename=filename.replace('.csv','')
     if(not os.path.isdir("Coordinatefiles")):
         os.makedirs("Coordinatefiles")
     path = "Coordinatefiles/"+filename+".json"
     f= open(path,"w+")
-    csvPath = "Coordinatefiles/"+filename+".csv"
 
-    with open(csvPath, newline='') as csvfile:
+    with open(fname, newline='') as csvfile:
         file = csv.reader(csvfile, delimiter=' ', quotechar='|')
 
         for row in file:
@@ -41,15 +44,18 @@ def main(argv):
             yCoordinate=row[0].split(',')[1]
             coordinate=[int(xCoordinate),int(yCoordinate)]
             allPixels.append(coordinate)
+        print(len(allPixels))
 
     for pixel in allPixels:
         blob = []
         if (not pixel in gevondenpixels):
             checkSurroundingPixels(pixel, blob)
+        if(len(blob)>blobsize):
             bloblist.append(blob)
     bloblist.sort(key=len, reverse=True)
+    print(filename)
 
-    for i in range(0,max(1,int(buildingcount))):
+    for i in range(0,min(int(buildingcount),int(len(bloblist)))):
         for pixel in bloblist[i]:
             pixelList.append(pixel)
 
@@ -121,7 +127,7 @@ def main(argv):
     f.write('\":')
     f.write(json.dumps(floor))
     f.write("}")
-    draw(pixelList,linesList,argv)
+    draw(pixelList,linesList,filename)
 
 
 def checkSurroundingPixels(pixel, blob):
@@ -210,8 +216,8 @@ def checkAlreadyScanned(pixel):
             return True
     return False
 
-def draw(pixelList, linesList,argv):
-    canvas = (int(sys.argv[3]),int(sys.argv[4]))
+def draw(pixelList, linesList,file):
+    canvas = (int(sys.argv[2]),int(sys.argv[3]))
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))
@@ -221,8 +227,8 @@ def draw(pixelList, linesList,argv):
     for pixel in pixelList:
         draw.point([pixel[0],pixel[1]],fill="black")
     im.thumbnail(thumb)
-    pngfile , sep, tail = argv[1].partition('.')
+    pngfile , sep, tail = file.partition('.')
     im.save("Coordinatefiles/"+pngfile+"outline"+'.png')
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()

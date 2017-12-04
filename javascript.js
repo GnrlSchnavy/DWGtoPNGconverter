@@ -40,7 +40,8 @@
 		var exporter = new Print(undefined, doc, view);
 		filename = inputfile.substring(inputfile.lastIndexOf("/")+1,inputfile.length-4);
 		path2 = path+"Coordinatefiles/"+filename+".pdf";
-		exporter.print(path2);		
+		exporter.print(path2);
+		di.exportFile(path+"Coordinatefiles/"+filename+".dxf","DFX 2000");
 	}
 	di.destroy()
 }

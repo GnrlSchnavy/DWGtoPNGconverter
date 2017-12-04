@@ -38,6 +38,7 @@ mainConversion (){
   -clone 0                              \
   -fill "#000000"                       \
   -colorize 100                         \
+  -colorize 100                         \
   \)                                    \
   \(                                    \
   -clone 0,1                            \
@@ -107,9 +108,7 @@ getCoordinates (){
 
       cat "Coordinatefiles/test4.txt" | grep -vE '#' | sed 's/://g' > "Coordinatefiles/$cleanfile.csv"
 
-      width=$(identify -format '%w' "Coordinatefiles/finaledges.png")
-      height=$(identify -format '%h' "Coordinatefiles/finaledges.png")
-      python3 lines.py "$cleanfile.csv" "$buildingcount" "$width" "$height"
+
 }
 
 progressBar () {
@@ -148,31 +147,27 @@ createHelperFile(){
   echo "-Threshold $THRESHOLD" >> $file
   echo "-buildingcount $buildingcount" >> $file
   layer="./layers.txt"
-  echo "\n--Active layers list for wall--\n" >> $file
-  echo "to be filled with layers that will only show the wall" >> $file
   echo "\n--Active layer list--\n" >> $file
   awk '!a[$0]++' "layers.txt" >>$file
 }
 
 createDirectories(){
-  rmdir "Coordinatefiles/combined.json"
-  rmdir "Coordinatefiles/minified.json"
+  rm -f "Coordinatefiles/minified.json"
   if [[ ! -e "$DWGfiles" ]]; then
-    mkdir DWGfiles
+    mkdir -p DWGfiles
   fi
     if [[ ! -e "$PNG" ]]; then
-    mkdir PNG
+    mkdir -p PNG
   fi
     if [[ ! -e "$Helperfiles" ]]; then
-    mkdir Helperfiles
+    mkdir -p Helperfiles
   fi
     if [[ ! -e "$PRIMEPNG" ]]; then
-    mkdir PRIMEPNG
+    mkdir -p PRIMEPNG
   fi
      if [[ ! -e "Coordinatefiles" ]]; then
-    mkdir Coordinatefiles
+    mkdir -p Coordinatefiles
   fi
-  touch "Coordinatefiles/combined.json"
 }
 
 removeCapitalLetters(){
@@ -196,7 +191,7 @@ removeCapitalLetters
 echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD -b $buildingcount -o $Outerwallsflag \nMore details can be found in the Helperfile inside the Helperfiles directory."
 echo "\n...please be patient..."
 
-for f in $FILES*.dwg  
+for f in $FILES*.dwg
 do
   pdffile=${f##*/}
   cleanfile=${pdffile%.*} 
@@ -210,6 +205,12 @@ fi
   (( tasksDone += 1 ))
   progressBar $taskCount $taskDone $text
 done
+
+pngs="$FILES""PNG/"*.png
+arr=($pngs)
+width=$(identify -format '%w' "${arr[0]}")
+height=$(identify -format '%h' "${arr[0]}")
+python3 lines.py "$buildingcount" "$width" "$height"
 
 for f in $FILES*.dwg  
 do
@@ -227,7 +228,7 @@ for c in $Coordinatefiles*.json
 jq -s add "${array[@]}" > "Coordinatefiles/final.json"
 jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
 
-rm "Coordinatefiles/final.json" "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
+rm -f "Coordinatefiles/finaledges.png" "Coordinatefiles/final.json" "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
 
 echo "\n...should be all done..."
 #Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
