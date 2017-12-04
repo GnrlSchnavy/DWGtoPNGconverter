@@ -42,6 +42,7 @@
 		path2 = path+"Coordinatefiles/"+filename+".pdf";
 		exporter.print(path2);		
 	}
+	di.destroy()
 }
 
 function getWallLayers(textFile){

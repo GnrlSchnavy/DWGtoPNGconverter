@@ -2,7 +2,7 @@
 Outerwallsflag="false"
 PPI=600
 THRESHOLD=0.01
-BLOBSIZE=100
+buildingcount=1
 SCALE=1000
 FILES=$PWD/
 binary="/Applications/QCAD-Pro.app/Contents/resources/qcad"
@@ -24,7 +24,7 @@ do
   t) THRESHOLD=$OPTARG;;
   p) PPI=$OPTARG;;
   o) Outerwallsflag="true";;
-  b) BLOBSIZE=$OPTARG;;
+  b) buildingcount=$OPTARG;;
   esac
 done
 
@@ -108,11 +108,8 @@ getCoordinates (){
       cat "Coordinatefiles/test4.txt" | grep -vE '#' | sed 's/://g' > "Coordinatefiles/$cleanfile.csv"
 
       width=$(identify -format '%w' "Coordinatefiles/finaledges.png")
-      height=$(identify -format '%h' "Coordinatefiles.finaledges.png")
-
-      echo "$width $height"
-
-      python3 lines.py "$cleanfile.csv" "$BLOBSIZE" "$width" "$height"
+      height=$(identify -format '%h' "Coordinatefiles/finaledges.png")
+      python3 lines.py "$cleanfile.csv" "$buildingcount" "$width" "$height"
 }
 
 progressBar () {
@@ -140,7 +137,7 @@ createHelperFile(){
   file="Helperfiles/Helperfile.txt"
   touch $file
   echo "--Command to run--\n" > $file
-  echo "./start -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD -b $BLOBSIZE" >> $file
+  echo "./start -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD -b $buildingcount" >> $file
   echo "\n --Variables-- \n" >> $file
   echo "-xoffset: $XOFF"  >> $file
   echo "-yoffset: $YOFF"  >> $file
@@ -149,7 +146,7 @@ createHelperFile(){
   echo "-scale:   $SCALE" >> $file
   echo "-PPI:     $PPI" >> $file
   echo "-Threshold $THRESHOLD" >> $file
-  echo "-BLOBSIZE $BLOBSIZE" >> $file
+  echo "-buildingcount $buildingcount" >> $file
   layer="./layers.txt"
   echo "\n--Active layers list for wall--\n" >> $file
   echo "to be filled with layers that will only show the wall" >> $file
@@ -196,7 +193,7 @@ createDirectories
 createHelperFile
 removeCapitalLetters
 
-echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD -b $BLOBSIZE -o $Outerwallsflag \nMore details can be found in the Helperfile inside the Helperfiles directory."
+echo "\n\nStarting script with -x $XOFF -y $YOFF -w $WIDTH -h $HEIGHT -s $SCALE -p $PPI -t $THRESHOLD -b $buildingcount -o $Outerwallsflag \nMore details can be found in the Helperfile inside the Helperfiles directory."
 echo "\n...please be patient..."
 
 for f in $FILES*.dwg  

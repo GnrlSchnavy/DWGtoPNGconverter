@@ -6,24 +6,24 @@ from PIL import Image, ImageDraw
 
 sys.setrecursionlimit(20000)
 
+
+blobsize = 100
+buildingcount=1
 pixelList = []
 scannedPixels = []
 linesList = []
-pixellijst = []
+allPixels = []
 gevondenpixels = []
 bloblist = []
 if len(sys.argv)<3:
-    blobsize = 100
+    buildingcount = 1
 else:
-    blobsize = sys.argv[2]
+    buildingcount = sys.argv[2]
 pngwidth=int(sys.argv[3])
 pngheigth=int(sys.argv[4])
-print(pngwidth,"-pngwidth")
-print(pngheigth,"-pngheight")
-
-
 
 def main(argv):
+
     filename = sys.argv[1]
     if filename.endswith('.csv'):
         filename=filename.replace('.csv','')
@@ -40,17 +40,17 @@ def main(argv):
             xCoordinate=row[0].split(',')[0]
             yCoordinate=row[0].split(',')[1]
             coordinate=[int(xCoordinate),int(yCoordinate)]
-            pixellijst.append(coordinate)
+            allPixels.append(coordinate)
 
-    for pixel in pixellijst:
+    for pixel in allPixels:
         blob = []
         if (not pixel in gevondenpixels):
             checkSurroundingPixels(pixel, blob)
-        if(len(blob)>int(blobsize)):
             bloblist.append(blob)
+    bloblist.sort(key=len, reverse=True)
 
-    for blob in bloblist:
-        for pixel in blob:
+    for i in range(0,max(1,int(buildingcount))):
+        for pixel in bloblist[i]:
             pixelList.append(pixel)
 
     for pixel in pixelList:
@@ -125,15 +125,15 @@ def main(argv):
 
 
 def checkSurroundingPixels(pixel, blob):
-    if (pixel in pixellijst and not pixel in gevondenpixels and not pixel in blob):blob.append(pixel)
-    if(not hasSurroundingPixel(pixel,pixellijst)):
+    if (pixel in allPixels and not pixel in gevondenpixels and not pixel in blob):blob.append(pixel)
+    if(not hasSurroundingPixel(pixel, allPixels)):
         return blob
     else:
-        for surroundingpixel in getSurroundingPixel(pixel,pixellijst):
-            if(surroundingpixel in pixellijst and not surroundingpixel in gevondenpixels and not surroundingpixel in blob):
+        for surroundingpixel in getSurroundingPixel(pixel, allPixels):
+            if(surroundingpixel in allPixels and not surroundingpixel in gevondenpixels and not surroundingpixel in blob):
                 blob.append(surroundingpixel)
                 gevondenpixels.append(surroundingpixel)
-                pixellijst.remove(surroundingpixel)
+                allPixels.remove(surroundingpixel)
                 checkSurroundingPixels(surroundingpixel,blob)
 
 def getSurroundingPixel(pixel, pixellijst):
@@ -167,14 +167,14 @@ def toText(list):
 
 def moreThanOneSurroundingPixel(pixel):
     surroundingpixels=0
-    if ( [pixel[0] + 1 , pixel[1]] in pixellijst):surroundingpixels+=1
-    if ( [pixel[0] + 1 , pixel[1] - 1] in pixellijst ):surroundingpixels+=1
-    if ( [pixel[0] + 1 , pixel[1] + 1] in pixellijst ):surroundingpixels+=1
-    if ( [pixel[0] , pixel[1] + 1] in pixellijst ):surroundingpixels+=1
-    if ( [pixel[0] , pixel[1] - 1] in pixellijst ):surroundingpixels+=1
-    if ( [pixel[0] - 1 , pixel[1] + 1] in pixellijst ):surroundingpixels+=1
-    if ( [pixel[0] - 1 , pixel[1] - 1] in pixellijst ):surroundingpixels+=1
-    if ( [pixel[0] - 1 , pixel[1]] in pixellijst ):surroundingpixels+=1
+    if ( [pixel[0] + 1 , pixel[1]] in allPixels):surroundingpixels+=1
+    if ( [pixel[0] + 1 , pixel[1] - 1] in allPixels):surroundingpixels+=1
+    if ( [pixel[0] + 1 , pixel[1] + 1] in allPixels):surroundingpixels+=1
+    if ( [pixel[0] , pixel[1] + 1] in allPixels):surroundingpixels+=1
+    if ( [pixel[0] , pixel[1] - 1] in allPixels):surroundingpixels+=1
+    if ( [pixel[0] - 1 , pixel[1] + 1] in allPixels):surroundingpixels+=1
+    if ( [pixel[0] - 1 , pixel[1] - 1] in allPixels):surroundingpixels+=1
+    if ( [pixel[0] - 1 , pixel[1]] in allPixels):surroundingpixels+=1
     if(surroundingpixels>2):
         return True
     else:
@@ -211,7 +211,7 @@ def checkAlreadyScanned(pixel):
     return False
 
 def draw(pixelList, linesList,argv):
-    canvas = (pngwidth,pngheigth)
+    canvas = (int(sys.argv[3]),int(sys.argv[4]))
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))
