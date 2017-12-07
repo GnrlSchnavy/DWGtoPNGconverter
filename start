@@ -182,6 +182,22 @@ readHelperfile(){
      if [[ -z ${buildingcount+x} ]]; then buildingcount=${commandarray[16]}; fi
 }
 
+createJSONFiles(){
+  pngs="$FILES""PNG/"*.png
+  arr=($pngs)
+  width=$(identify -format '%w' "${arr[0]}")
+  height=$(identify -format '%h' "${arr[0]}")
+  python3 lines.py "$buildingcount" "$width" "$height"
+  Coordinatefiles=$PWD/Coordinatefiles/
+  array=()
+  for c in $Coordinatefiles*.json
+    do
+      array+=("$c")
+  done
+  jq -s add "${array[@]}" > "Coordinatefiles/final.json"
+  jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
+}
+
 if [[ ${#allparam[@]} -le 9 ]]; then
   if [[ ! -e "Helperfile.txt" ]]; then
     echo "No helperfile found in the current directory. Please fill in all parameters."
@@ -240,28 +256,14 @@ for f in $FILES*.dwg
     "$binary" -no-gui -no-dock-icon -allow-multiple-instances -autostart "javascript.js" "-f" "$f" "-x" "$XOFF" "-y" "$YOFF" "-w" "$WIDTH" "-h" "$HEIGHT" "-s" "$SCALE" "-o" "$Outerwallsflag" "-r" 2>"-x" | grep "MESSAGE:"
     mainConversion $cleanfile $PPI $THRESHOLD
 
-  if [ "$Outerwallsflag" == "true" ];then
-    getCoordinates $PPI $cleanfile
-    pngs="$FILES""PNG/"*.png
-    arr=($pngs)
-    width=$(identify -format '%w' "${arr[0]}")
-    height=$(identify -format '%h' "${arr[0]}")
-    python3 lines.py "$buildingcount" "$width" "$height"
-      Coordinatefiles=$PWD/Coordinatefiles/
-      array=()
-      for c in $Coordinatefiles*.json
-        do
-          array+=("$c")
-        done
-
-      jq -s add "${array[@]}" > "Coordinatefiles/final.json"
-      jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
-  fi
-
+    if [ "$Outerwallsflag" == "true" ];then
+      getCoordinates $PPI $cleanfile
+    fi
     (( tasksDone += 1 ))
     progressBar $taskCount $taskDone $text
 done
 
+createJSONFiles
 
 for f in $FILES*.dwg  
   do
