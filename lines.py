@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 
 sys.setrecursionlimit(20000)
 
-
+#python3 lines.py <number of buildings> <width> <height>
 blobsize = 100
 pixelList = []
 scannedPixels = []
@@ -44,7 +44,6 @@ def start(fname):
             yCoordinate=row[0].split(',')[1]
             coordinate=[int(xCoordinate),int(yCoordinate)]
             allPixels.append(coordinate)
-        print(len(allPixels))
 
     for pixel in allPixels:
         blob = []
@@ -53,7 +52,6 @@ def start(fname):
         if(len(blob)>blobsize):
             bloblist.append(blob)
     bloblist.sort(key=len, reverse=True)
-    print(filename)
 
     for i in range(0,min(int(buildingcount),int(len(bloblist)))):
         for pixel in bloblist[i]:
