@@ -7,7 +7,6 @@ from PIL import Image, ImageDraw
 
 sys.setrecursionlimit(20000)
 
-#python3 lines.py <number of buildings> <width> <height>
 blobsize = 100
 pixelList = []
 scannedPixels = []
@@ -15,16 +14,32 @@ linesList = []
 allPixels = []
 gevondenpixels = []
 bloblist = []
-buildingcount = sys.argv[1]
-pngwidth=int(sys.argv[2])
-pngheigth=int(sys.argv[3])
+buildingcount = 1
+pngwidth = 2000
+pngheigt = 2000
+
+
+
+# python3 lines.py <buildingcount> <pngwidth> <pngheigt>
 
 def main():
+    checkParameters
     path="Coordinatefiles/*.csv"
     for fname in glob.glob(path):
         global pixelList, scannedPixels, linesList, allPixels,gevondenpixels,bloblist
         pixelList, scannedPixels, linesList, allPixels, gevondenpixels, bloblist = [[],[],[],[],[],[]]
         start(fname)
+
+def checkParameters():
+    if len(sys.argv) != 4:
+        print("To few arguments!")
+        print("Arguments should be: <buildingcount> <pngwidth> <pngheigt>")
+        exit(1)
+    else:
+        global buildingcount, pngwidth, pngheigt
+        buildingcount = sys.argv[1]
+        pngwidth=int(sys.argv[2])
+        pngheigth=int(sys.argv[3])
 
 def start(fname):
 
@@ -165,10 +180,6 @@ def hasSurroundingPixel(pixel,pixellijst):
     else:
         return False
 
-def toText(list):
-    str1 = ''.join(''.join(list))
-    return str1
-
 def moreThanOneSurroundingPixel(pixel):
     surroundingpixels=0
     if ( [pixel[0] + 1 , pixel[1]] in allPixels):surroundingpixels+=1
@@ -215,7 +226,7 @@ def checkAlreadyScanned(pixel):
     return False
 
 def draw(pixelList, linesList,file):
-    canvas = (int(sys.argv[2]),int(sys.argv[3]))
+    canvas = (int(pngwidth),int(pngheigt))
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))

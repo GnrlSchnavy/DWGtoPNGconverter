@@ -12,8 +12,12 @@ taskCount=(*.dwg)
 taskCount=${#taskCount[@]}
 taskDone=0
 progressBarWidth=20
-allparam=( "$@" )
+trap ctrl_c INT
 
+ctrl_c(){
+  cleanup
+  exit 1
+}
 
 mainConversion (){
     
@@ -97,7 +101,8 @@ getCoordinates (){
 }
 
 progressBar () {
-  
+  RED='\033[1;32m'
+  NC='\033[0m'
   progress=$(echo "$progressBarWidth/$taskCount*$tasksDone" | bc -l)
   fill=$(printf "%.0f\n" $progress)
   if [ $fill -gt $progressBarWidth ]; then
@@ -112,8 +117,8 @@ progressBar () {
   fi
 
   printf "\r["
-  printf "%${fill}s" '' | tr ' ' ▉
-  printf "%${empty}s" '' | tr ' ' ░
+  printf "${RED}%${fill}s" '' | tr ' ' ▉
+  printf "${NC}%${empty}s" '' | tr ' ' ░
   printf "] $percent%% - $text "
 }
 
@@ -170,6 +175,7 @@ removeCapitalLetters(){
 }
 
 readHelperfile(){
+  if [[ -e "Helperfile.txt" ]]; then
      command=$(grep "./start" "./Helperfile.txt")
      commandarray=($command)
      if [[ -z ${XOFF+x} ]]; then XOFF=${commandarray[2]}; fi
@@ -180,6 +186,7 @@ readHelperfile(){
      if [[ -z ${PPI+x} ]]; then PPI=${commandarray[12]}; fi
      if [[ -z ${THRESHOLD+x} ]]; then THRESHOLD=${commandarray[14]}; fi
      if [[ -z ${buildingcount+x} ]]; then buildingcount=${commandarray[16]}; fi
+  fi
 }
 
 createJSONFiles(){
@@ -198,55 +205,80 @@ createJSONFiles(){
   jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
 }
 
-if [[ ${#allparam[@]} -le 9 ]]; then
-  if [[ ! -e "Helperfile.txt" ]]; then
-    echo "No helperfile found in the current directory. Please fill in all parameters."
-    exit -1
+checkMainArguments(){
+  if [ ! -z ${XOFF+x} ]; then XOFF=$XOFF; fi
+  if [ ! -z ${YOFF+x} ]; then YOFF=$YOFF; fi
+  if [ ! -z ${WIDTH+x} ]; then WIDTH=$WIDTH; fi
+  if [ ! -z ${HEIGHT+x} ]; then HEIGHT=$HEIGHT; fi
+  if [ ! -z ${SCALE+x} ]; then SCALE=$SCALE; fi
+  if [ ! -z ${THRESHOLD+x} ]; then THRESHOLD=$THRESHOLD; fi
+  if [ ! -z ${PPI+x} ]; then PPI=$PPI; fi
+  if [ ! -z ${Outerwallsflag+x} ]; then Outerwallsflag=$Outerwallsflag; fi
+  if [ ! -z ${buildingcount+x} ]; then buildingcount=$buildingcount; fi
+}
+
+moveDWGFiles(){
+  for f in $FILES*.dwg  
+    do
+      mv "$f" "DWGfiles"
+  done
+}
+
+checkHelperFile(){
+  allparam=( "$@" )
+  if [[ ${#allparam[@]} -le 9 ]]; then
+    if [[ ! -e "Helperfile.txt" ]]; then
+      echo "No helperfile found in the current directory. Please fill in all parameters to run this script for the first time. A Helperfile will be created afterwards."
+      exit -1
+    fi
   fi
-fi
+}
 
+runGetOpts(){
+  local   OPTIND=1
+  while getopts "x:y:w:h:s:p:t:b: o" option
+    do
+      case "${option}"
+      in
+      x) XOFF=$OPTARG;;
+      y) YOFF=$OPTARG;;
+      w) WIDTH=$OPTARG;;
+      h) HEIGHT=$OPTARG;;
+      s) SCALE=$OPTARG;;
+      t) THRESHOLD=$OPTARG;;
+      p) PPI=$OPTARG;;
+      o) Outerwallsflag="true";;
+      b) buildingcount=$OPTARG;;
+      ?) echo "Something went wrong. Remember that x,y,w,h,s need to be followed by some value." && exit 1;;
+      esac
+  done
+}
 
-while getopts "x:y:w:h:s:p:t:b: o" option
-do
-  case "${option}"
-  in
-  x) XOFF=$OPTARG;;
-  y) YOFF=$OPTARG;;
-  w) WIDTH=$OPTARG;;
-  h) HEIGHT=$OPTARG;;
-  s) SCALE=$OPTARG;;
-  t) THRESHOLD=$OPTARG;;
-  p) PPI=$OPTARG;;
-  o) Outerwallsflag="true";;
-  b) buildingcount=$OPTARG;;
-  esac
-done
+printToBeConverted(){
+  echo "\n\nStarting script with\n\
+  || -x $XOFF || -y $YOFF || -w $WIDTH || -h $HEIGHT || -s $SCALE || \n\
+  || -p $PPI || -t $THRESHOLD || \n\
+  || -b $buildingcount || -o $Outerwallsflag ||\
+  \nMore details can be found in the Helperfile.\
+  \n...please be patient..."
+}
 
-if [ ! -z ${XOFF+x} ]; then XOFF=$XOFF; fi
-if [ ! -z ${YOFF+x} ]; then YOFF=$YOFF; fi
-if [ ! -z ${WIDTH+x} ]; then WIDTH=$WIDTH; fi
-if [ ! -z ${HEIGHT+x} ]; then HEIGHT=$HEIGHT; fi
-if [ ! -z ${SCALE+x} ]; then SCALE=$SCALE; fi
-if [ ! -z ${THRESHOLD+x} ]; then THRESHOLD=$THRESHOLD; fi
-if [ ! -z ${PPI+x} ]; then PPI=$PPI; fi
-if [ ! -z ${Outerwallsflag+x} ]; then Outerwallsflag=$Outerwallsflag; fi
-if [ ! -z ${buildingcount+x} ]; then buildingcount=$buildingcount; fi
+cleanup(){
+  rm -f "Coordinatefiles/finaledges.png" "Coordinatefiles/final.json" "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
+  echo "\n...should be all done..."
+  #Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
+  log="./-x"
+  [ -e "$log" ] && rm $log
+}
 
-
-
-if [[ -e "Helperfile.txt" ]];then
-    readHelperfile
-fi
+checkHelperFile
+runGetOpts "$@"
+checkMainArguments
+readHelperfile
 createDirectories
 createHelperFile
 removeCapitalLetters
-
-echo "\n\nStarting script with\n\
-|| -x $XOFF || -y $YOFF || -w $WIDTH || -h $HEIGHT || -s $SCALE || \n\
-|| -p $PPI || -t $THRESHOLD || \n\
-||-b $buildingcount || -o $Outerwallsflag ||\
-\nMore details can be found in the Helperfile.\
-\n...please be patient..."
+printToBeConverted
 
 for f in $FILES*.dwg
   do
@@ -264,16 +296,5 @@ for f in $FILES*.dwg
 done
 
 createJSONFiles
-
-for f in $FILES*.dwg  
-  do
-    mv "$f" "DWGfiles"
-done
-
-rm -f "Coordinatefiles/finaledges.png" "Coordinatefiles/final.json" "Coordinatefiles/filled.png" "Coordinatefiles/finallines.png" "Coordinatefiles/auto-level.png" "Coordinatefiles/final.png" "Coordinatefiles/5.png" "Coordinatefiles/test1.txt" "Coordinatefiles/test2.txt" "Coordinatefiles/test3.txt" "Coordinatefiles/test4.txt" "Coordinatefiles/1.png" "Coordinatefiles/2.png" "Coordinatefiles/4.png"
-
-echo "\n...should be all done..."
-#Just to remove the annoying debug log that QCAD automatically makes. This keeps the terminal screen clean as well.
-log="./-x"
-[ -e "$log" ] && rm $log
-
+moveDWGFiles
+cleanup
