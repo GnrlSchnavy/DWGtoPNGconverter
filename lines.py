@@ -15,15 +15,15 @@ allPixels = []
 gevondenpixels = []
 bloblist = []
 buildingcount = 1
-pngwidth = 2000
-pngheigt = 2000
+pngwidth = 0
+pngheight = 0
 
 
 
 # python3 lines.py <buildingcount> <pngwidth> <pngheigt>
 
 def main():
-    checkParameters
+    checkParameters()
     path="Coordinatefiles/*.csv"
     for fname in glob.glob(path):
         global pixelList, scannedPixels, linesList, allPixels,gevondenpixels,bloblist
@@ -36,10 +36,10 @@ def checkParameters():
         print("Arguments should be: <buildingcount> <pngwidth> <pngheigt>")
         exit(1)
     else:
-        global buildingcount, pngwidth, pngheigt
+        global buildingcount, pngwidth, pngheight
         buildingcount = sys.argv[1]
         pngwidth=int(sys.argv[2])
-        pngheigth=int(sys.argv[3])
+        pngheight=int(sys.argv[3])
 
 def start(fname):
 
@@ -226,7 +226,7 @@ def checkAlreadyScanned(pixel):
     return False
 
 def draw(pixelList, linesList,file):
-    canvas = (int(pngwidth),int(pngheigt))
+    canvas = (int(pngwidth),int(pngheight))
     scale = 1
     thumb = canvas[0] / scale, canvas[1] / scale
     im = Image.new('RGBA', canvas, (255, 255, 255, 255))
