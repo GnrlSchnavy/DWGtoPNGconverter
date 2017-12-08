@@ -190,6 +190,7 @@ readHelperfile(){
 }
 
 createJSONFiles(){
+  if [ "$Outerwallsflag" == "true" ];then
   pngs="$FILES""PNG/"*.png
   arr=($pngs)
   width=$(identify -format '%w' "${arr[0]}")
@@ -203,6 +204,7 @@ createJSONFiles(){
   done
   jq -s add "${array[@]}" > "Coordinatefiles/final.json"
   jq -c . < "Coordinatefiles/final.json" > "Coordinatefiles/minified.json"
+  fi
 }
 
 checkMainArguments(){

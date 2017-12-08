@@ -18,8 +18,6 @@ buildingcount = 1
 pngwidth = 0
 pngheight = 0
 
-
-
 # python3 lines.py <buildingcount> <pngwidth> <pngheigt>
 
 def main():
@@ -141,7 +139,6 @@ def start(fname):
     f.write(json.dumps(floor))
     f.write("}")
     draw(pixelList,linesList,filename)
-
 
 def checkSurroundingPixels(pixel, blob):
     if (pixel in allPixels and not pixel in gevondenpixels and not pixel in blob):blob.append(pixel)

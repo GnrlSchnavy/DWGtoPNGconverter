@@ -1,4 +1,4 @@
- function main(){ 
+function main(){ 
 
 	include("scripts/File/Print/Print.js");
 	var path = prepareDirectory(getArgument(args,"-f"));
