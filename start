@@ -161,14 +161,14 @@ createDirectories(){
 }
 
 removeCapitalLetters(){
-  for f in $FILES*.DWG
+  for f in "$FILES"*.DWG
   do
     pdffile=${f##*/}
     cleanfile=${pdffile%.*} 
     mv -f "$f" "$cleanfile.dwg"
   done
 
-  for f in $FILES*.dwg
+  for f in "$FILES"*.dwg
   do
   mv -f "$f" "${f// /_}"
   done
@@ -220,14 +220,14 @@ checkMainArguments(){
 }
 
 moveDWGFiles(){
-  for f in $FILES*.dwg  
+  for f in "$FILES"*.dwg  
     do
       mv "$f" "DWGfiles"
   done
 }
 
 checkHelperFile(){
-  allparam=( "$@" )
+  allparam=("$@")
   if [[ ${#allparam[@]} -le 9 ]]; then
     if [[ ! -e "Helperfile.txt" ]]; then
       echo "No helperfile found in the current directory. Please fill in all parameters to run this script for the first time. A Helperfile will be created afterwards."
@@ -273,7 +273,7 @@ cleanup(){
   [ -e "$log" ] && rm $log
 }
 
-checkHelperFile
+checkHelperFile "$@"
 runGetOpts "$@"
 checkMainArguments
 readHelperfile
@@ -282,7 +282,7 @@ createHelperFile
 removeCapitalLetters
 printToBeConverted
 
-for f in $FILES*.dwg
+for f in "$FILES"*.dwg
   do
     pdffile=${f##*/}
     cleanfile=${pdffile%.*} 

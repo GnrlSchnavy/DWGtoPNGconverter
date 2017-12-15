@@ -21,7 +21,6 @@ function main(){
 	filename = inputfile.substring(inputfile.lastIndexOf("/")+1,inputfile.length-4);
 	path2 = path+"Helperfiles/"+filename+".pdf";
 	exporter.print(path2);							  //Export to PDF
-	print("\n\nMESSAGE1:file exported to " + path2 + "\n\n");
 	di.exportFile(path+"Helperfiles/"+filename+".dxf","DFX 2000");
 
 	//This is sort of old code. It's nice to keep it in because for some buildings it is neccesary to turn of some layers to get a good outline of the outer walls.
@@ -87,51 +86,41 @@ function getParameters(){
 	if(testArgument(args, "-x")){
 		if(getArgument(args, "-x")==''){
 			temp["xoff"] = 0;
-			print("MESSAGE1:no x value found, setting it to default 0");
 		}
 		else{
 			temp["xoff"] = getArgument(args, "-x");
-			print("MESSAGE1:xoff set to "+ temp["xoff"]);
 		}
 	}
 	if(testArgument(args, "-y")){
 		if(getArgument(args, "-y")==''){
 			temp["yoff"] = 0;
-			print("MESSAGE1:no y value found, setting it to default 0");
 		}
 		else{
 			temp["yoff"] = getArgument(args, "-y");
-			print("MESSAGE1:yoff set to "+ temp["yoff"]);
 		}
 	}
 	if(testArgument(args, "-w")){
 		if(getArgument(args, "-w")==''){
 			temp["width"] = 100;
-			print("MESSAGE1:no width value found, setting it to default 100");
 		}
 		else{
 			temp["width"] = getArgument(args, "-w");
-			print("MESSAGE1:width set to "+ temp["width"]);
 		}
 	}
 	if(testArgument(args, "-h")){
 		if(getArgument(args, "-h")==''){
 			temp["height"] = 100;
-			print("MESSAGE1:no height value found, setting it to default 100");
 		}
 		else{
 			temp["height"] = getArgument(args, "-h");
-			print("MESSAGE1:height set to "+ temp["height"]);
 		}
 	}
 	if(testArgument(args, "-s")){
 		if(getArgument(args, "-s")==''){
 			temp["scale"] = 1000;
-			print("MESSAGE1:no scale value found, setting it to default 1000");
 		}
 		else{
 			temp["scale"] = getArgument(args, "-s");
-			print("MESSAGE1:scale set to "+ temp["scale"]);
 		}
 	}
 	return temp;
@@ -239,7 +228,6 @@ function getArguments(args, shortFlag, longFlag) {
 function importFiles(doc,di){
 		if(testArgument(args, "-f")){
 		inputfile = getArgument(args, "-f");
-		print("\n\nMESSAGE1:found file " + inputfile + " for processing\n\n");
 		di.importFile(inputfile);
 		if (di.importFile(inputfile) != RDocumentInterface.IoErrorNoError) {
 			print("something went wrong with import");
