@@ -55,6 +55,7 @@ mainConversion (){
   -channel A -fx "p*(p>$3?22:0)"\
   "PNG/$1.png"
 
+
    convert -density $2                  \
       "Helperfiles/$1.pdf"              \
       -resize 2048x2048                 \
@@ -63,8 +64,7 @@ mainConversion (){
       -quality 90                       \
       -background white                 \
       -alpha remove                     \
-      -negate       \
-      -threshold 0 \
+       -negate      \
        -negate      \
       "PRIMEPNG/$1.png"
 }
@@ -296,7 +296,6 @@ for f in "$FILES"*.dwg
     (( tasksDone += 1 ))
     progressBar $taskCount $taskDone $text
 done
-
 createJSONFiles
 moveDWGFiles
 cleanup
