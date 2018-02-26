@@ -1,3 +1,6 @@
+<h2>Introduction</h2>
+Some thrown together scripts that can convert DWG files to PNG files in batch. This was mostly used to convert DWG files of floorplans from buildings with multiple floors.
+
 <h2>Requirements:</h2>
 
 - All the to be converted DWG's in one directory.
